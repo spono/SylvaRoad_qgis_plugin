@@ -25,7 +25,9 @@
 import os
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtGui import QIcon
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtCore import QCoreApplication
 from qgis.core import QgsMessageLog, Qgis
 import numpy as np
 import os,math,gc,datetime,sys
@@ -37,34 +39,6 @@ from shapely.geometry import LineString
 from shapely.geometry import Point
 from math import *
 from numpy import *
-
-###############################################################################
-### Parameters
-###############################################################################
-Wspace= "C:/Users/yoann/Downloads/meisenthal2/"
-
-Dtm_file = Wspace+"mnt_rgealti_5m.tif"
-Obs_Dir =  Wspace+"obs_skidder/"
-Waypoints_file = Wspace+"test5.shp"
-Property_file = ""
-
-Result_Dir = Wspace+"results2/"
-
-trans_slope_all = 90       # [%] Max cross slope outside hairpin
-trans_slope_hairpin = 55   # [%] Max cross slope at hairpin
-min_slope = 2              # [%] Min slope of the road
-max_slope = 12             # [%] Max slope of the road
-penalty_xy = 150           # [m/180°] Turn around penalty
-penalty_z = 80             # [m/2*max(min_slope,max_slope)] "Wave" penalty
-D_neighborhood = 42        # [m] Distance of the viciny around pixel
-max_diff_z = 3             # [m] Max difference of elevation between terrain and
-                           #     theoretical elevation of the road 
-angle_hairpin = 110        # [°] Min angle for a turn to be considered as hairpin
-Lmax_ab_sl = 40            # [m] Max length of road with cross slope > trans_slope_all
-Radius = 8                 # [m] Radius for trucks
-
-
-
 
 
 
@@ -87,6 +61,8 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface = iface
         global Sylvaroad_UI
         Sylvaroad_UI = self
+
+
 ##################################################################
 #.______     ______    __    __  .__________.  ______   .__   __.# 
 #|   _  \   /  __  \  |  |  |  | |          | /  __  \  |  \ |  |# 
@@ -95,29 +71,122 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
 #|  |_)  | |  `--'  | |  `--'  |     |  |    |  `--'  | |  |\   |# 
 #|______/   \______/   \______/      |__|     \______/  |__| \__|# 
 ################################################################## 
+        for i in range(1, 7):
+            button = getattr(self, f"pushButton_{i}")
+            button.clicked.connect(lambda _, num=i: self.open_folder(num))
+
         self.button_box.accepted.connect(self.launch)
         self.button_box.rejected.connect(self.abort)
+
+
+    def open_folder(self, button_number):
+        # Définit les filtres génériques pour Shapefiles et fichiers raster
+        shapefile_filter = "Shapefiles (*.shp );;Geopackage(*.gpkg);;All files (*)"
+        raster_filter = "Raster files (*.tif *.asc *.txt);;All files (*)"
+
+        # Définit les options de la boîte de dialogue
+        options = QFileDialog.Options()
+        #options |= QFileDialog.DontUseNativeDialog
+
+        # Affiche le dialogue de sélection de fichier avec les filtres appropriés
+        if button_number == 4:
+            selected_file, _ = QFileDialog.getOpenFileName(None, QCoreApplication.translate("MainWindow","Select a file"), filter=shapefile_filter, options=options)
+        elif button_number == 2:
+            selected_file, _ = QFileDialog.getOpenFileName(None, QCoreApplication.translate("MainWindow","Select a file"), filter=raster_filter, options=options)
+        elif button_number in [1, 3, 5, 6]: 
+            selected_file = QFileDialog.getExistingDirectory(None, QCoreApplication.translate("MainWindow","Select a folder"), options=options)
+
+        if selected_file:
+            text_edit = getattr(self, f"lineEdit_{button_number}")
+            text_edit.setText(selected_file)
+
+
+#####################################################################################################################
+#  _______  _______ .___________.   ____    ____  ___      .______    __       ___      .______    __       _______ #
+# /  _____||   ____||           |   \   \  /   / /   \     |   _  \  |  |     /   \     |   _  \  |  |     |   ____|#
+#|  |  __  |  |__   `---|  |----`    \   \/   / /  ^  \    |  |_)  | |  |    /  ^  \    |  |_)  | |  |     |  |__   #
+#|  | |_ | |   __|      |  |          \      / /  /_\  \   |      /  |  |   /  /_\  \   |   _  <  |  |     |   __|  #
+#|  |__| | |  |____     |  |           \    / /  _____  \  |  |\  \-.|  |  /  _____  \  |  |_)  | |  `----.|  |____ #
+# \______| |_______|    |__|            \__/ /__/     \__\ | _| `.__||__| /__/     \__\ |______/  |_______||_______|#
+#####################################################################################################################
+            
+            
+    def get_variables(self):
+        Workspace = self.lineEdit_1.text()
+        Workspace += "/"
+        Dtm_file = self.lineEdit_2.text()
+        Obs_Dir = self.lineEdit_3.text()
+        if Obs_Dir:
+            Obs_Dir += "/"
+        Waypoints_file = self.lineEdit_4.text()
+        Property_file = self.lineEdit_5.text()
+        if Property_file:
+            Property_file += "/"
+        Result_Dir = self.lineEdit_6.text()
+        Result_Dir += "/"
+        trans_slope_all = self.spinBox_1.value()       # [%] Max cross slope outside hairpin
+        trans_slope_hairpin = self.spinBox_1.value()   # [%] Max cross slope at hairpin
+        min_slope = self.spinBox_1.value()             # [%] Min slope of the road
+        max_slope = self.spinBox_2.value()             # [%] Max slope of the road
+        penalty_xy = self.spinBox_3.value()            # [m/180°] Turn around penalty
+        penalty_z = self.spinBox_4.value()             # [m/2*max(min_slope,max_slope)] "Wave" penalty
+        D_neighborhood = self.spinBox_5.value()        # [m] Distance of the viciny around pixel
+        max_diff_z = self.spinBox_6.value()            # [m] Max difference of elevation between terrain and
+                                                       #     theoretical elevation of the road 
+        angle_hairpin = self.spinBox_7.value()         # [°] Min angle for a turn to be considered as hairpin
+        Lmax_ab_sl = self.spinBox_8.value()            # [m] Max length of road with cross slope > trans_slope_all
+        Radius = self.spinBox_9.value()                # [m] Radius for trucks
+        return Workspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,Lmax_ab_sl,Radius
+
+
 
 ################################################################################
 ### Script execution
 ################################################################################
-
-    def get_variables(self):
-        print("get_variables")
+        
 
     def launch(self):
+        console_warning(QCoreApplication.translate("MainWindow","SylvaRoaD Launching..."))
+        ##test
+        self.lineEdit_1.setText("C:/Users/yoann/Downloads/meisenthal2")
+        self.lineEdit_2.setText("C:/Users/yoann/Downloads/meisenthal2/mnt_rgealti_5m.tif")
+        self.lineEdit_3.setText("C:/Users/yoann/Downloads/meisenthal2/obs_skidder")
+        self.lineEdit_4.setText("C:/Users/yoann/Downloads/meisenthal2/test5.shp")
+        self.lineEdit_6.setText("C:/Users/yoann/Downloads/meisenthal2/results2")
+        ##
+        Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,Lmax_ab_sl,Radius = self.get_variables()
+        
         if 'Wspace' not in locals() or 'Wspace' not in globals() :
             Wspace = Result_Dir
 
-        Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,trans_slope_all,
-        trans_slope_hairpin,min_slope,max_slope,penalty_xy,penalty_z,D_neighborhood,
-        max_diff_z,angle_hairpin,Lmax_ab_sl,Wspace,Radius = self.get_variables()
-        
-        
+        ##test:
+            console_info(f"Wspace:  {Wspace}")
+            console_info(f"Dtm_file:  {Dtm_file}")
+            console_info(f"Obs_Dir:  {Obs_Dir}")
+            console_info(f"Waypoints_file:  {Waypoints_file}")
+            console_info(f"Property_file:  {Property_file}")
+            console_info(f"Result_Dir:  {Result_Dir}")
+            console_info(f"trans_slope_all: {trans_slope_all}")
+            console_info(f"trans_slope_hair: {trans_slope_hairpin}")
+            console_info(f"min_slope: {min_slope}")
+            console_info(f"max_slope: {max_slope}")
+            console_info(f"penalty_xy: {penalty_xy}")
+            console_info(f"penalty_z: {penalty_z}")
+            console_info(f"D_neighborhood: {D_neighborhood}")
+            console_info(f"max_diff_z: {max_diff_z}")
+            console_info(f"angle_hairpin: {angle_hairpin}")
+            console_info(f"Lmax_ab_sl: {Lmax_ab_sl}")
+            console_info(f"Radius: {Radius}")
+        ##test
+
+
         road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,
                                 trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
                                 penalty_xy,penalty_z,D_neighborhood,max_diff_z,
                                 angle_hairpin,Lmax_ab_sl,Wspace,Radius)
+
+        console_warning(QCoreApplication.translate("MainWindow","SylvaRoaD finished"))
+
 
     def abort(self):
         self.close()
@@ -137,17 +206,17 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
 # Fonctions qui affiche un message d'erreur dans la console
 def console_warning(message):
     message = str(message)
-    QgsMessageLog.logMessage(message,'Sylvaccess',Qgis.Warning)
+    QgsMessageLog.logMessage(message,'SylvaRoaD',Qgis.Warning)
 
 # Fonctions qui affiche un message d'information dans la console
 def console_info(message):
     message = str(message)
-    QgsMessageLog.logMessage(message,'Sylvaccess',Qgis.Info)
+    QgsMessageLog.logMessage(message,'SylvaRoaD',Qgis.Info)
 
 
 
 ###############################################################################
-### Function
+### Functions
 ###############################################################################
 
 def conv_az_to_polar(az):
@@ -433,45 +502,45 @@ def raster_get_info(in_file_name):
 def check_files(Dtm_file,Waypoints_file,Property_file):
     test = 1
     Csize = None
-    mess="\nLES PROBLEMES SUIVANTS ONT ETE IDENTIFIES CONCERNANT LES ENTREES SPATIALES: \n"
+    mess=QCoreApplication.translate("MainWindow","\nLES PROBLEMES SUIVANTS ONT ETE IDENTIFIES CONCERNANT LES ENTREES SPATIALES: \n")
     #Check DTM    
     try:
         names,values,proj,Extent = raster_get_info(Dtm_file)  
         Csize = values[4]
         if values[5]==None:           
-            mess+=" -   Raster MNT : Aucune valeur de NoData definie. Attention, cela peut engendrer des résultats éronnés.\n" 
+            mess+=QCoreApplication.translate("MainWindow"," -   Raster MNT : Aucune valeur de NoData definie. Attention, cela peut engendrer des résultats éronnés.\n" )
     except:
         test=0
-        mess+=" -   Raster MNT :  Le chemin d'acces est manquant ou incorrect. Ce raster est obligatoire\n" 
+        mess+=QCoreApplication.translate("MainWindow"," -   Raster MNT :  Le chemin d'acces est manquant ou incorrect. Ce raster est obligatoire\n") 
             
     #Check Waypoints 
     try:    
         testfd = check_field(Waypoints_file,"ID_TRON")
         if testfd==0:
             test=0
-            mess+=" -  Couche points de passage : Le champs 'ID_TRON' est manquant\n"  
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Le champs 'ID_TRON' est manquant\n"  )
         elif testfd==2:
             test=0
-            mess+=" -  Couche points de passage : Veuillez remplir le champs 'ID_TRON' pour toutes les entités\n"         
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Veuillez remplir le champs 'ID_TRON' pour toutes les entités\n")         
         
         testfd =  check_field(Waypoints_file,"ID_POINT")
         if testfd==0:
             test=0
-            mess+=" -  Couche points de passage : Le champs 'ID_POINT' est manquant\n"  
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Le champs 'ID_POINT' est manquant\n"  )
         elif testfd==2:
             test=0
-            mess+=" -  Couche points de passage : Veuillez remplir le champs 'ID_POINT' pour toutes les entités\n"        
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Veuillez remplir le champs 'ID_POINT' pour toutes les entités\n" )       
         
         testfd = check_field(Waypoints_file,"BUFF_POINT")
         if testfd==0:
             test=0
-            mess+=" -  Couche points de passage : Le champs 'BUFF_POINT' est manquant\n"  
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Le champs 'BUFF_POINT' est manquant\n" ) 
         elif testfd==2:
             test=0
-            mess+=" -  Couche points de passage : Veuillez remplir le champs 'BUFF_POINT' pour toutes les entités\n"            
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Veuillez remplir le champs 'BUFF_POINT' pour toutes les entités\n"   )         
     except:
         test=0
-        mess+=" -   Couche points de passage : Le chemin d'acces est manquant ou incorrect. Cette couche est obligatoire\n" 
+        mess+=QCoreApplication.translate("MainWindow"," -   Couche points de passage : Le chemin d'acces est manquant ou incorrect. Cette couche est obligatoire\n" )
     
     #Check foncier    
     if Property_file!="":   
@@ -479,16 +548,16 @@ def check_files(Dtm_file,Waypoints_file,Property_file):
             testfd = check_field(Property_file,"FONC_OK")
             if testfd==0:
                 test=0
-                mess+=" -  Couche foncier : Le champs 'FONC_OK' est manquant\n"  
+                mess+=QCoreApplication.translate("MainWindow"," -  Couche foncier : Le champs 'FONC_OK' est manquant\n"  )
             elif testfd==2:
                 test=0
-                mess+=" -  Couche foncier : Veuillez remplir le champs 'FONC_OK' pour toutes les entités\n"     
+                mess+=QCoreApplication.translate("MainWindow"," -  Couche foncier : Veuillez remplir le champs 'FONC_OK' pour toutes les entités\n"    ) 
         except:
             test=0
-            mess+=" -   Couche foncier : Le chemin d'acces est incorrect. \n" 
+            mess+=QCoreApplication.translate("MainWindow"," -   Couche foncier : Le chemin d'acces est incorrect. \n")
     if not test:
         mess+="\n"
-        mess+="MERCI DE CORRIGER AVANT DE RELANCER L'OUTIL\n"
+        mess+=QCoreApplication.translate("MainWindow","MERCI DE CORRIGER AVANT DE RELANCER L'OUTIL\n")
     return test,mess,Csize
 
 
@@ -1035,8 +1104,7 @@ def Astar_force_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
         while not frontier.empty() and not test:
             av = int(100*(1-mindist_to_end/Dtocp))   
             if loop>0:        
-                sys.stdout.write("\r    Segment "+str(idseg+1)+" - Progression %d" % av + str_process)
-                sys.stdout.flush()                 
+                console_info("    Segment "+str(idseg+1)+" - Progression %d" % av + str_process)                 
             
             idcurrent = frontier.get()   
                               
@@ -1085,7 +1153,7 @@ def Astar_force_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
                     key_frontier[(idvois,theo_d,dtocp) ]=1    
                 
             loop+=1 
-            # print(loop)              
+            # console_info(loop)              
                    
         #4. reconstruct path
         Path=None
@@ -1095,9 +1163,9 @@ def Astar_force_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
                 yE,xE=Tab_corresp[int(idclosest),0],Tab_corresp[int(idclosest),1]            
             Path =reconstruct_path(IdPix[yE,xE], IdPix[yS,xS], Best,Tab_corresp) 
             FullPath.append(Path)
-            print("\n    Point de passage ID_POINT "+str(idseg+2)+" atteind")
+            console_info(QCoreApplication.translate("MainWindow","    Point de passage ID_POINT "+str(idseg+2)+" atteind"))
         else:
-            print("\n    Impossible d'atteindre le Point de passage ID_POINT "+str(idseg+2))
+            console_info(QCoreApplication.translate("MainWindow","    Impossible d'atteindre le Point de passage ID_POINT "+str(idseg+2)))
                     
     Path=None
     if len(FullPath)>0:
@@ -1189,8 +1257,7 @@ def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
         while not frontier.empty() and prev_cost<min_cost:
             av = min(int(100*(1-mindist_to_end/Dtocp)),99)                     
             if loop>0:        
-                sys.stdout.write("\r    Segment "+str(idseg+1)+" - Progression %d" % av + str_process)
-                sys.stdout.flush()                 
+                console_info(QCoreApplication.translate("MainWindow","    Segment ")+str(idseg+1)+QCoreApplication.translate("MainWindow"," - Progression %d") % av + str_process)                
             
             idcurrent = frontier.get()  
             prev_cost=Best[idcurrent,1]
@@ -1231,8 +1298,8 @@ def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
             loop+=1       
         
         av=100
-        sys.stdout.write("\r    Segment "+str(idseg+1)+" - Progression %d" % av + str_process)
-        sys.stdout.flush()   
+        console_info(QCoreApplication.translate("MainWindow","    Segment ")+str(idseg+1)+QCoreApplication.translate("MainWindow"," - Progression %d") % av + str_process)
+  
         
         #4. Identify pixels within bufgoal and add them to new search               
         if idseg<nbpart-1:
@@ -1246,7 +1313,7 @@ def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
         test=1
         if nbok==0:
             test=0
-            print("\n     - Impossible d'atteindre le Point de passage ID_POINT "+str(idseg+2))
+            console_info(QCoreApplication.translate("MainWindow","     - Impossible d'atteindre le Point de passage ID_POINT ")+str(idseg+2))
             break            
         tp = keep==0
         Best[tp]=0        
@@ -1257,7 +1324,7 @@ def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
         
         
         #6.a if not last segment
-        print("\n     - Point de passage ID_POINT "+str(idseg+2)+" atteind")
+        console_info(QCoreApplication.translate("MainWindow","     - Point de passage ID_POINT ")+str(idseg+2)+QCoreApplication.translate("MainWindow"," atteind"))
         if idseg<nbpart-1:   
             difbuf = np.max(Best[add_to_frontier,1])-np.min(Best[add_to_frontier,1])
             key_frontier= {}
@@ -1320,34 +1387,15 @@ def create_res_dir(Result_Dir,
     return Rspace+'/'
 
 
-def heures(Hdebut,language):
+def heures(Hdebut):
     Hfin = datetime.datetime.now()
     duree = Hfin - Hdebut
-    ts = duree.seconds
-    nb_days = int(ts/3600./24.)
-    ts -= nb_days*3600*24
-    nb_hours = int(ts/3600)
-    ts -= nb_hours*3600
-    nb_minutes = int(ts/60)
-    ts -= nb_minutes*60  
-    if nb_days>0:
-        if language=='FR': 
-            str_duree = str(nb_days)+'j '+str(nb_hours)+'h '+str(nb_minutes)+'min '+str(ts)+'s'
-        else:
-            str_duree = str(nb_days)+'d '+str(nb_hours)+'h '+str(nb_minutes)+'min '+str(ts)+'s'
-    elif nb_hours >0:
-        str_duree = str(nb_hours)+'h '+str(nb_minutes)+'min '+str(ts)+'s'
-    elif nb_minutes>0:
-        str_duree = str(nb_minutes)+'min '+str(ts)+'s'
-    else:
-        str_duree = str(ts)+'s'        
-    if language=='FR':
-        str_debut = str(Hdebut.day)+'/'+str(Hdebut.month)+'/'+str(Hdebut.year)+' '+str(Hdebut.hour)+':'+str(Hdebut.minute)+':'+str(Hdebut.second)
-        str_fin = str(Hfin.day)+'/'+str(Hfin.month)+'/'+str(Hfin.year)+' '+str(Hfin.hour)+':'+str(Hfin.minute)+':'+str(Hfin.second)
-    else:
-        str_debut = str(Hdebut.year)+'/'+str(Hdebut.month)+'/'+str(Hdebut.day)+' '+str(Hdebut.hour)+':'+str(Hdebut.minute)+':'+str(Hdebut.second)
-        str_fin = str(Hfin.year)+'/'+str(Hfin.month)+'/'+str(Hfin.day)+' '+str(Hfin.hour)+':'+str(Hfin.minute)+':'+str(Hfin.second)
-    return str_duree,str_fin,str_debut
+    str_duree = str(duree).split('.')[0]
+    str_duree = str_duree.split(':')[0] + 'h ' + str_duree.split(':')[1] + 'm ' + str_duree.split(':')[2] + 's'
+    str_debut = Hdebut.strftime('%d/%m/%Y %H:%M:%S')
+    str_fin = Hfin.strftime('%d/%m/%Y %H:%M:%S')
+
+    return str_duree, str_fin, str_debut
 
 
 def get_param(trans_slope_all,trans_slope_hairpin,
@@ -1357,36 +1405,36 @@ def get_param(trans_slope_all,trans_slope_hairpin,
               Dtm_file,Obs_Dir,Waypoints_file,
               Property_file,Csize,Lmax_ab_sl,Radius):
     
-    txt = "FICHIERS UTILISES POUR LA MODELISATION:\n\n"
-    txt = txt+"   - MNT :                   " + Dtm_file+"\n"
-    txt = txt+"     Résolution (m) :        "+str(Csize)+" m\n"
-    txt = txt+"   - Points de passage :     " + Waypoints_file+"\n"
-    txt = txt+"   - Foncier :               " + Property_file+"\n"
-    txt = txt+"   - Dossier Obstacles :     " + Obs_Dir+"\n\n\n"
+    txt = QCoreApplication.translate("MainWindow","FICHIERS UTILISES POUR LA MODELISATION:") + "\n\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - MNT :                   ") + Dtm_file+"\n"
+    txt = txt+QCoreApplication.translate("MainWindow","     Résolution (m) :        ")+str(Csize)+" m\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Points de passage :     ") + Waypoints_file+"\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Foncier :               ") + Property_file+"\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Dossier Obstacles :     ") + Obs_Dir+"\n\n\n"
     
-    txt = txt + "PARAMETRES UTILISES POUR LA MODELISATION:\n\n"
-    txt = txt+"   - Pente en long min. :                                                        "+str(min_slope)+" %\n"
-    txt = txt+"   - Pente en long max. :                                                        "+str(max_slope)+" %\n"
-    txt = txt+"   - Pente en travers max. en tout point :                                       "+str(trans_slope_all)+" %\n"
-    txt = txt+"   - Pente en travers max. pour implanter un virage en lacet :                   "+str(trans_slope_hairpin)+"  %\n"
-    txt = txt+"   - Pénalité de changement de direction :                                       "+str(penalty_xy)+" m/"+str(angle_hairpin)+"°\n"
-    txt = txt+"   - Pénalité de changement du sens de pente en long :                           "+str(penalty_z)+" m\n"
-    txt = txt+"   - Rayon de recherche autour d'un pixel :                                      "+str(D_neighborhood)+" m\n"
-    txt = txt+"   - Différence max. entre altitude du terrain et altitude théorique du trace :  "+str(max_diff_z)+" m\n"
-    txt = txt+"   - Angle au-delà duquel un virage est considéré comme lacet :                  "+str(angle_hairpin)+" °\n"
-    txt = txt+"   - Rayon de braquage appliqué aux lacets :                                     "+str(Radius)+" m\n"
-    txt = txt+"   - Longueur cumulée max. avec Pente en travers > Pente en travers max. :       "+str(Lmax_ab_sl)+" m\n"
+    txt = txt +QCoreApplication.translate("MainWindow", "PARAMETRES UTILISES POUR LA MODELISATION:")+ "\n\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Pente en long min. :")+"                                                        "+str(min_slope)+" %\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Pente en long max. :")+"                                                        "+str(max_slope)+" %\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Pente en travers max. en tout point :")+"                                       "+str(trans_slope_all)+" %\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Pente en travers max. pour implanter un virage en lacet :")+"                   "+str(trans_slope_hairpin)+"  %\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Pénalité de changement de direction :")+"                                       "+str(penalty_xy)+" m/"+str(angle_hairpin)+"°\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Pénalité de changement du sens de pente en long :")+"                           "+str(penalty_z)+" m\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Rayon de recherche autour d'un pixel :")+"                                      "+str(D_neighborhood)+" m\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Différence max. entre altitude du terrain et altitude théorique du trace :")+"  "+str(max_diff_z)+" m\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Angle au-delà duquel un virage est considéré comme lacet :")+"                  "+str(angle_hairpin)+" °\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Rayon de braquage appliqué aux lacets :")+"                                     "+str(Radius)+" m\n"
+    txt = txt+QCoreApplication.translate("MainWindow","   - Longueur cumulée max. avec Pente en travers > Pente en travers max. :")+"       "+str(Lmax_ab_sl)+" m\n"
     return txt
 
 
 def create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut):
-    filename = Rspace +"Parametre_simulation.txt"    
-    txt = "SylvaRoaD\n\n"
-    txt = txt+"Version du programme: 2.2 08/2021\n"
-    txt = txt+"Auteur: Sylvain DUPIRE - SylvaLab\n\n"
-    txt = txt+"Date et heure de lancement du script:                                      "+str_debut+"\n"
-    txt = txt+"Date et heure a la fin de l'éxécution du script:                           "+str_fin+"\n"
-    txt = txt+"Temps total d'éxécution du script:                                         "+str_duree+"\n\n"
+    filename = Rspace +QCoreApplication.translate("MainWindow","Parametre_simulation.txt")    
+    txt = QCoreApplication.translate("MainWindow","SylvaRoaD")+"\n\n"
+    txt = txt+QCoreApplication.translate("MainWindow","Version du programme: 0.2 03/2024")+"\n"
+    txt = txt+QCoreApplication.translate("MainWindow","Auteur: Zenner Yoann - Cosylval")+"\n\n"
+    txt = txt+QCoreApplication.translate("MainWindow","Date et heure de lancement du script:")+"                                      "+str_debut+"\n"
+    txt = txt+QCoreApplication.translate("MainWindow","Date et heure a la fin de l'éxécution du script:")+"                           "+str_fin+"\n"
+    txt = txt+QCoreApplication.translate("MainWindow","Temps total d'éxécution du script:")+"                                         "+str_duree+"\n\n"
     txt = txt+param
     txt = txt+res_process    
     fichier = open(filename, "w")
@@ -1504,25 +1552,25 @@ def test_point_within(segments,dtm,Obs,id_tron,res_process):
     nrows,ncols = Obs.shape
     #Check final point
     txt=""
-    txt_deb = '\n    Tronçon n°'+str(int(id_tron))+" : "
+    txt_deb = QCoreApplication.translate("MainWindow",'\n    Tronçon n°')+str(int(id_tron))+" : "
     try:
         end = segments[len(segments)-1][1]    
         #Check initial point
         start = segments[0][0]
         if start[0]<0 or start[0]>nrows or start[1]<0 or start[1]>ncols:
-            txt2 =  txt_deb + "Le point initial n'est pas dans l'emprise du MNT"
+            txt2 =  txt_deb + QCoreApplication.translate("MainWindow","Le point initial n'est pas dans l'emprise du MNT")
             txt += txt2
             res_process+= txt2
         else:            
             if Obs[start]== 2 :                
-                txt2 = txt_deb + "Le point initial n'est pas dans le parcellaire autorisé"
+                txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point initial n'est pas dans le parcellaire autorisé")
                 txt += txt2
                 res_process+= txt2       
             elif Obs[start]== 1 :
                 if dtm[start]==-9999:
-                    txt2 = txt_deb + "Le point initial n'a pas de valeur MNT valide"
+                    txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point initial n'a pas de valeur MNT valide")
                 else:
-                    txt2 = txt_deb + "Le point initial est sur un obstacle"
+                    txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point initial est sur un obstacle")
                 txt += txt2
                 res_process+= txt2     
         
@@ -1531,22 +1579,22 @@ def test_point_within(segments,dtm,Obs,id_tron,res_process):
             txt_deb = "\n                  "        
         if len(segments)>1:    
             for i in range(1,len(segments)):
-                txt_pt = "Le point de passage ID_POINT "+str(i+1)
+                txt_pt = QCoreApplication.translate("MainWindow","Le point de passage ID_POINT ")+str(i+1)
                 start = segments[i][0]
                 if start[0]<0 or start[0]>nrows or start[1]<0 or start[1]>ncols:
-                    txt2 = txt_deb + txt_pt + " n'est pas dans l'emprise du MNT"
+                    txt2 = txt_deb + txt_pt + QCoreApplication.translate("MainWindow"," n'est pas dans l'emprise du MNT")
                     txt += txt2
                     res_process+= txt2
                 else:
                     if Obs[start]== 2 :                
-                        txt2 = txt_deb + txt_pt+ " n'est pas dans le parcellaire autorisé"
+                        txt2 = txt_deb + txt_pt+ QCoreApplication.translate("MainWindow"," n'est pas dans le parcellaire autorisé")
                         txt += txt2
                         res_process+= txt2       
                     elif Obs[start]== 1 :
                         if dtm[start]==-9999:
-                            txt2 = txt_deb +txt_pt+ " n'a pas de valeur MNT valide"
+                            txt2 = txt_deb +txt_pt+ QCoreApplication.translate("MainWindow"," n'a pas de valeur MNT valide")
                         else:
-                            txt2 = txt_deb +txt_pt+ " est sur un obstacle"
+                            txt2 = txt_deb +txt_pt+ QCoreApplication.translate("MainWindow"," est sur un obstacle")
                         txt += txt2
                         res_process+= txt2   
         
@@ -1554,30 +1602,30 @@ def test_point_within(segments,dtm,Obs,id_tron,res_process):
         if len(txt)>0:
             txt_deb = "\n                  "
         if end[0]<0 or end[0]>nrows or end[1]<0 or end[1]>ncols:
-            txt2 =  txt_deb + "Le point final n'est pas dans l'emprise du MNT"
+            txt2 =  txt_deb + QCoreApplication.translate("MainWindow","Le point final n'est pas dans l'emprise du MNT")
             txt += txt2
             res_process+= txt2
         else:           
             if Obs[end]== 2 :                
-                txt2 = txt_deb + "Le point final n'est pas dans le parcellaire autorisé"
+                txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point final n'est pas dans le parcellaire autorisé")
                 txt += txt2
                 res_process+= txt2       
             elif Obs[end]== 1 :
                 if dtm[end]==-9999:
-                    txt2 = txt_deb + "Le point final n'a pas de valeur MNT valide"
+                    txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point final n'a pas de valeur MNT valide")
                 else:
-                    txt2 = txt_deb + "Le point final est sur un obstacle"
+                    txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point final est sur un obstacle")
                 txt += txt2
                 res_process+= txt2     
         
     except:
-        txt = '\n    Tronçon n°'+str(int(id_tron))+" : Il faut au minimum deux points pour réaliser l'analyse"
+        txt = QCoreApplication.translate("MainWindow",'    Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow"," : Il faut au minimum deux points pour réaliser l'analyse")
         res_process+= txt
         end=""
             
     if len(txt)>0: 
         test=0
-        print(txt)
+        console_info(txt)
         res_process += '\n'
     else:
         test=1
@@ -1590,9 +1638,9 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
                               D_neighborhood,max_diff_z,angle_hairpin,
                               Lmax_ab_sl,Wspace,Radius):
     
-    print("\nSylvaRoaD - v2.2")
+    console_info(QCoreApplication.translate("MainWindow","SylvaRoaD - 0.2"))
     Hdebut = datetime.datetime.now()
-    print("\n  Verification des donnees spatiales")
+    console_info(QCoreApplication.translate("MainWindow","  Verification des donnees spatiales"))
     #Test if spatial data are OK
     test,mess,Csize = check_files(Dtm_file,Waypoints_file,Property_file)
     
@@ -1616,10 +1664,10 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
                     Rspace,Radius)
     
     if not test:
-        print(mess)
+        console_info(mess)
         
     else:    
-        print("\n  Chargement des donnees")
+        console_info(QCoreApplication.translate("MainWindow","  Chargement des donnees"))
         #load data   
         dtm,Extent,Csize,proj = load_float_raster(Dtm_file)
         nrows,ncols=dtm.shape
@@ -1638,7 +1686,7 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
             Fonc = np.ones_like(dtm,dtype=np.int8)
         
         #get usefull variables
-        print("  Initialisation du traitement")
+        console_info(QCoreApplication.translate("MainWindow","  Initialisation du traitement"))
            
         road_network_proj,proj = get_proj_from_road_network(Waypoints_file)  
         trans_slope_all *= 1.
@@ -1665,12 +1713,12 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
         #Build neigborhood table
         IdVois, Id, Tab_corresp,IdPix,Slope,Dist,Az = build_NeibTable(D_neighborhood,Csize,dtm,np.int8(Obs>0),min_slope,max_slope)
         
-        res_process = '\n\nRésultat par tronçon'
+        res_process = QCoreApplication.translate("MainWindow",'\n\nRésultat par tronçon')
         
         Generaltest=0
         
         for id_tron in tron_list:  
-            print("\n  Traitement du tronçon n°"+str(id_tron))
+            console_info(QCoreApplication.translate("MainWindow","  Traitement du tronçon n°")+str(id_tron))
             segments = get_waypoints(id_tron,pt_list)           
             #Check if points are within MNT/property and are not ostacles
             test, res_process,end = test_point_within(segments,dtm,Obs,id_tron,res_process)
@@ -1683,10 +1731,10 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
                 start = segments[i][0]
                 if Dist_to_End[start]<0:                    
                     if i==0:
-                        txt = '\n    Tronçon n°'+str(int(id_tron))+' : Des obstacles empêchent de joindre le début et la fin du tronçon'
+                        txt = QCoreApplication.translate("MainWindow",'   Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Des obstacles empêchent de joindre le début et la fin du tronçon')
                     else:
-                        txt = '\n    Tronçon n°'+str(int(id_tron))+" : Des obstacles empêchent d'atteindre le point de passage ID_POINT "+str(i+1)
-                    print(txt)
+                        txt = QCoreApplication.translate("MainWindow",'   Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow"," : Des obstacles empêchent d'atteindre le point de passage ID_POINT ")+str(i+1)
+                    console_info(txt)
                     res_process+= txt+'\n'
                     test=0
             
@@ -1715,26 +1763,26 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
                                  Csize,road_network_proj,255,raster_type='UINT8') 
                         Generaltest=1
                     #Path_to_lace(Path,Rspace+'Lacets_Troncon_'+str(int(id_tron))+'.shp',proj,Extent,Csize,dtm)
-                txt = '\n    Tronçon n°'+str(int(id_tron))+' : Un chemin optimal a été trouvé. '
-                txt +='\n                  Longueur planimétrique : '+str(int((Path[-1,4])+0.5))+" m"
+                txt = QCoreApplication.translate("MainWindow",'\n    Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Un chemin optimal a été trouvé. ')
+                txt +=QCoreApplication.translate("MainWindow",'\n                  Longueur planimétrique : ')+str(int((Path[-1,4])+0.5))+" m"
                 if nb_lac>0:
-                    txt +='\n                  Longueur planimétrique (avec lacets corrigés) : '
+                    txt +=QCoreApplication.translate("MainWindow",'\n                  Longueur planimétrique (avec lacets corrigés) : ')
                     txt +=str(int(np.sum(NewPath[:,4])+0.5))+" m"
-                txt +='\n                  Nombre de lacets : '+str(int(nb_lac))
+                txt +=QCoreApplication.translate("MainWindow",'\n                  Nombre de lacets : ')+str(int(nb_lac))
                 if Lsl>0:
-                    txt += "\n                  Sur "+str(int(Lsl+0.5))+" m, la pente en travers est supérieure à la pente en travers max."
-                print(txt) 
+                    txt += "\n                  "+ QCoreApplication.translate("MainWindow","Sur ")+str(int(Lsl+0.5))+QCoreApplication.translate("MainWindow"," m, la pente en travers est supérieure à la pente en travers max.")
+                console_info(txt) 
                 
             else: 
                 Path_to_lineshape(Path,Rspace+'Troncon_'+str(int(id_tron))+'_incomplet.shp',proj,Extent,Csize,dtm,nb_lac)
-                txt = '\n    Tronçon n°'+str(int(id_tron))+' : Aucun chemin trouvé. '
-                txt = '\n                  Le chemin le plus proche du but a été sauvegardé. '               
-                print(txt) 
+                txt = QCoreApplication.translate("MainWindow",'\n    Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Aucun chemin trouvé. ')
+                txt = QCoreApplication.translate("MainWindow",'\n                  Le chemin le plus proche du but a été sauvegardé. ')               
+                console_info(txt) 
             res_process+= txt+"\n"
 
-        str_duree,str_fin,str_debut=heures(Hdebut,'FR')        
+        str_duree,str_fin,str_debut=heures(Hdebut)        
         create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut)
-        print("\n  Tous les tronçons ont été traités")
+        console_info(QCoreApplication.translate("MainWindow","  Tous les tronçons ont été traités"))
 
 
 
@@ -2075,20 +2123,50 @@ def calc_init(idcurrent, Id, IdVois, Slope, Best, Tab_corresp, Az, Dist, newObs,
     xc = Tab_corresp[idcurrent, 1]
     yc = Tab_corresp[idcurrent, 0]
     nbvois = Tab_corresp[idcurrent, 2]
-    add_to_frontier = np.zeros((nbvois,), dtype=np.int32)
+    add_to_frontier = np.zeros(nbvois, dtype=np.int32)
     nbok = 0
-
+    
     for neib in range(nbvois):
         idvois = Id[idcurrent, neib]
         D = Dist[IdVois[idcurrent, neib]]
         y = Tab_corresp[idvois, 0]
         x = Tab_corresp[idvois, 1]
-
+        
         if newObs[y, x]:
             continue
-
+        
         D = Dist[IdVois[idcurrent, neib]]
-        Azimut = Az
+        Azimut = Az[IdVois[idcurrent, neib]]
+        slope_perc = Slope[idcurrent, neib] / 100.
+
+        # Assuming check_profile function is defined elsewhere
+        test_prof, newLsl = check_profile(yc, xc, y, x, slope_perc, dtm, Csize,
+                                           diffz_prop_L(max_diff_z, D_neighborhood, D),
+                                           newObs, Obs2, 0, Lmax_ab_sl)
+        if not test_prof:
+            continue
+
+        if take_dtoend:
+            D_to_cp = Dist_to_End[y, x]
+        else:
+            D_to_cp = Distplan(y, x, yE, xE) * Csize
+
+        add_to_frontier[nbok] = idvois
+        nbok += 1
+        Best[idvois, 0] = idvois
+        Best[idvois, 1] = D + newLsl
+        Best[idvois, 2] = D
+        Best[idvois, 3] = slope_perc
+        Best[idvois, 4] = Azimut
+        Best[idvois, 5] = idcurrent
+        Best[idvois, 6] = 10 * D_neighborhood
+        Best[idvois, 7] = newLsl
+        Best[idvois, 8] = 1
+        Best[idvois, 9] = D_to_cp
+
+        mindist_to_end = min(mindist_to_end, D_to_cp)
+
+    return Best, add_to_frontier[:nbok], mindist_to_end
 
 
 def get_pix_bufgoal_and_update(Best, Tab_corresp, bufgoal, start, Csize, yE, xE):    
