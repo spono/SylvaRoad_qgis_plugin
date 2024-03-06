@@ -5,10 +5,10 @@ Version : 0.2
 Langage : Python 3.x  
 
 Financement : **Office National des Forêts - Pôle RDI de Chambéry** (*laurent.malabeux@onf.fr*)  
-![ONF](./img/onf_logo.gif?raw=true)
+![ONF](./sylvaroad/img/onf_logo.gif?raw=true)
 
 Conception et développement : **Sylvain DUPIRE, SylvaLab - 2021** (*sylvain.dupire@sylvalab.fr*)   
-![SylvaLab](./img/logo_sylvalab.png?raw=true)
+![SylvaLab](./sylvaroad/img/logo_sylvalab.png?raw=true)
 
 ---
 ### Contexte et objectif de SylvaRoaD
@@ -20,7 +20,7 @@ Dans le cadre de la conception de nouvelles dessertes forestières (route ou pis
 SylvaRoaD s'inscrit dans cette logique et ambitionne d'aider les forestiers dans la conception de nouvelles dessertes forestières en leur permettant d'identifier un tracé optimal respectant plusieurs critères définis par l'utilisateur afin de desservir de nouvelles parcelles forestières. L'outil permet ainsi de tester rapidement plusieurs options d'itinéraires ou encore de rajouter des points de passages obligatoires. 
 Les différents tracés ainsi identifiés peuvent être incorporés dans un GPS afin d'en valider la faisabilité sur le terrain.  
 
-![SylvaLab](./img/illustration.png?raw=true)
+![SylvaLab](./sylvaroad/img/illustration.png?raw=true)
 
 Tags = ___Desserte___, ___forestière___, ___montagne___, ___route___, ___MNT___, ___tracé___, ___conception___, ___création___, ___Forest___, ___Road___, ___Design___, ___DTM___  
 
