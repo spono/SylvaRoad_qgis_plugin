@@ -1406,37 +1406,39 @@ def get_param(trans_slope_all,trans_slope_hairpin,
               Property_file,Csize,Lmax_ab_sl,Radius):
     
     txt = QCoreApplication.translate("MainWindow","FICHIERS UTILISES POUR LA MODELISATION:") + "\n\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - MNT :                   ") + Dtm_file+"\n"
-    txt = txt+QCoreApplication.translate("MainWindow","     Résolution (m) :        ")+str(Csize)+" m\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Points de passage :     ") + Waypoints_file+"\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Foncier :               ") + Property_file+"\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Dossier Obstacles :     ") + Obs_Dir+"\n\n\n"
-    
-    txt = txt +QCoreApplication.translate("MainWindow", "PARAMETRES UTILISES POUR LA MODELISATION:")+ "\n\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Pente en long min. :")+"                                                        "+str(min_slope)+" %\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Pente en long max. :")+"                                                        "+str(max_slope)+" %\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Pente en travers max. en tout point :")+"                                       "+str(trans_slope_all)+" %\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Pente en travers max. pour implanter un virage en lacet :")+"                   "+str(trans_slope_hairpin)+"  %\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Pénalité de changement de direction :")+"                                       "+str(penalty_xy)+" m/"+str(angle_hairpin)+"°\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Pénalité de changement du sens de pente en long :")+"                           "+str(penalty_z)+" m\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Rayon de recherche autour d'un pixel :")+"                                      "+str(D_neighborhood)+" m\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Différence max. entre altitude du terrain et altitude théorique du trace :")+"  "+str(max_diff_z)+" m\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Angle au-delà duquel un virage est considéré comme lacet :")+"                  "+str(angle_hairpin)+" °\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Rayon de braquage appliqué aux lacets :")+"                                     "+str(Radius)+" m\n"
-    txt = txt+QCoreApplication.translate("MainWindow","   - Longueur cumulée max. avec Pente en travers > Pente en travers max. :")+"       "+str(Lmax_ab_sl)+" m\n"
+    txt += QCoreApplication.translate("MainWindow","   - MNT :                   ") + Dtm_file+"\n"
+    txt += QCoreApplication.translate("MainWindow","     Résolution (m) :        ")+str(Csize)+" m\n"
+    txt += QCoreApplication.translate("MainWindow","   - Points de passage :     ") + Waypoints_file+"\n"
+    txt += QCoreApplication.translate("MainWindow","   - Foncier :               ") + Property_file+"\n"
+    txt += QCoreApplication.translate("MainWindow","   - Dossier Obstacles :     ") + Obs_Dir+"\n\n\n"
+    txt += "" .join (["_"]*80) + "\n\n"
+    txt += QCoreApplication.translate("MainWindow", "PARAMETRES UTILISES POUR LA MODELISATION:")+ "\n\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pente en long min. :")+"                                                        "+str(min_slope)+" %\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pente en long max. :")+"                                                        "+str(max_slope)+" %\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pente en travers max. en tout point :")+"                                       "+str(trans_slope_all)+" %\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pente en travers max. pour implanter un virage en lacet :")+"                   "+str(trans_slope_hairpin)+"  %\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pénalité de changement de direction :")+"                                       "+str(penalty_xy)+" m/"+str(angle_hairpin)+"°\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pénalité de changement du sens de pente en long :")+"                           "+str(penalty_z)+" m\n"
+    txt += QCoreApplication.translate("MainWindow","   - Rayon de recherche autour d'un pixel :")+"                                      "+str(D_neighborhood)+" m\n"
+    txt += QCoreApplication.translate("MainWindow","   - Différence max. entre altitude du terrain et altitude théorique du trace :")+"  "+str(max_diff_z)+" m\n"
+    txt += QCoreApplication.translate("MainWindow","   - Angle au-delà duquel un virage est considéré comme lacet :")+"                  "+str(angle_hairpin)+" °\n"
+    txt += QCoreApplication.translate("MainWindow","   - Rayon de braquage appliqué aux lacets :")+"                                     "+str(Radius)+" m\n"
+    txt += QCoreApplication.translate("MainWindow","   - Longueur cumulée max. avec Pente en travers > Pente en travers max. :")+"       "+str(Lmax_ab_sl)+" m\n"
     return txt
 
 
 def create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut):
     filename = Rspace +QCoreApplication.translate("MainWindow","Parametre_simulation.txt")    
     txt = QCoreApplication.translate("MainWindow","SylvaRoaD")+"\n\n"
-    txt = txt+QCoreApplication.translate("MainWindow","Version du programme: 0.2 03/2024")+"\n"
-    txt = txt+QCoreApplication.translate("MainWindow","Auteur: Zenner Yoann - Cosylval")+"\n\n"
-    txt = txt+QCoreApplication.translate("MainWindow","Date et heure de lancement du script:")+"                                      "+str_debut+"\n"
-    txt = txt+QCoreApplication.translate("MainWindow","Date et heure a la fin de l'éxécution du script:")+"                           "+str_fin+"\n"
-    txt = txt+QCoreApplication.translate("MainWindow","Temps total d'éxécution du script:")+"                                         "+str_duree+"\n\n"
-    txt = txt+param
-    txt = txt+res_process    
+    txt += QCoreApplication.translate("MainWindow","Version du programme: 0.2 03/2024")+"\n"
+    txt += QCoreApplication.translate("MainWindow","Auteur: Zenner Yoann - Cosylval")+"\n\n"
+    txt += QCoreApplication.translate("MainWindow","Date et heure de lancement du script:")+"                                      "+str_debut+"\n"
+    txt += QCoreApplication.translate("MainWindow","Date et heure a la fin de l'éxécution du script:")+"                           "+str_fin+"\n"
+    txt += QCoreApplication.translate("MainWindow","Temps total d'éxécution du script:")+"                                         "+str_duree+"\n\n"
+    txt += "" .join (["_"]*80) + "\n\n"
+    txt += param
+    txt += "" .join (["_"]*80) + "\n\n"
+    txt += res_process    
     fichier = open(filename, "w")
     fichier.write(txt)
     fichier.close()
@@ -1775,8 +1777,8 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
                 
             else: 
                 Path_to_lineshape(Path,Rspace+'Troncon_'+str(int(id_tron))+'_incomplet.shp',proj,Extent,Csize,dtm,nb_lac)
-                txt = QCoreApplication.translate("MainWindow",'\n    Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Aucun chemin trouvé. ')
-                txt = QCoreApplication.translate("MainWindow",'\n                  Le chemin le plus proche du but a été sauvegardé. ')               
+                txt += QCoreApplication.translate("MainWindow",'\n    Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Aucun chemin trouvé. ')
+                txt += QCoreApplication.translate("MainWindow",'\n                  Le chemin le plus proche du but a été sauvegardé. ')               
                 console_info(txt) 
             res_process+= txt+"\n"
 
