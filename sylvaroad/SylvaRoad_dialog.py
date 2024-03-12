@@ -150,8 +150,8 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
         ##test
         self.lineEdit_1.setText("C:/Users/yoann/Downloads/meisenthal2")
         self.lineEdit_2.setText("C:/Users/yoann/Downloads/meisenthal2/mnt_rgealti_5m.tif")
-        self.lineEdit_3.setText("C:/Users/yoann/Downloads/meisenthal2/obs_skidder")
-        self.lineEdit_4.setText("C:/Users/yoann/Downloads/meisenthal2/test5.shp")
+        self.lineEdit_3.setText("C:/Users/yoann/Downloads/meisenthal2/empty")
+        self.lineEdit_4.setText("C:/Users/yoann/Downloads/meisenthal2/test7.shp")
         self.lineEdit_6.setText("C:/Users/yoann/Downloads/meisenthal2/results2")
         ##
         Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,Lmax_ab_sl,Radius = self.get_variables()
@@ -1428,9 +1428,11 @@ def get_param(trans_slope_all,trans_slope_hairpin,
 
 
 def create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut):
-    filename = Rspace +QCoreApplication.translate("MainWindow","Parametre_simulation.txt")    
+    filename = Rspace +"Parametre_simulation.txt"    
     txt = QCoreApplication.translate("MainWindow","SylvaRoaD")+"\n\n"
-    txt += QCoreApplication.translate("MainWindow","Version du programme: 0.2 03/2024")+"\n"
+    ver =  "0.2"
+    date = "03/2024"
+    txt += QCoreApplication.translate("MainWindow","Version du programme:" + ver + date)+"\n"
     txt += QCoreApplication.translate("MainWindow","Auteur: Zenner Yoann - Cosylval")+"\n\n"
     txt += QCoreApplication.translate("MainWindow","Date et heure de lancement du script:")+"                                      "+str_debut+"\n"
     txt += QCoreApplication.translate("MainWindow","Date et heure a la fin de l'éxécution du script:")+"                           "+str_fin+"\n"
@@ -1639,8 +1641,9 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
                               min_slope,max_slope,penalty_xy,penalty_z,
                               D_neighborhood,max_diff_z,angle_hairpin,
                               Lmax_ab_sl,Wspace,Radius):
-    
-    console_info(QCoreApplication.translate("MainWindow","SylvaRoaD - 0.2"))
+    ver = "0.2"
+    txt = ""
+    console_info(QCoreApplication.translate("MainWindow","SylvaRoaD - Version ")+ver)
     Hdebut = datetime.datetime.now()
     console_info(QCoreApplication.translate("MainWindow","  Verification des donnees spatiales"))
     #Test if spatial data are OK
@@ -1745,7 +1748,7 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
             #Process
             newObs = np.copy(np.int8(Obs>0))
             newObs[Dist_to_End<0]=1
-                     
+            txt = ""
             
             Path,test = Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
                                     min_slope,max_slope,penalty_xy,penalty_z,Dist_to_End,
@@ -1789,7 +1792,27 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
 
 
 #############################################################
+        
+
+
+
+
+
 #CYTHON
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
 #############################################################
         
 
@@ -1810,8 +1833,7 @@ def PyList_Size(lst):
 
 
 def PyList_Append(lst, item):
-    lst.append(item)
-    return 0  # In Python, there's no need to return -1 for errors as exceptions will be raised automatically
+    return lst.append(item)  
 
 
 def PyList_GetSlice(lst, low, high):
@@ -1819,8 +1841,7 @@ def PyList_GetSlice(lst, low, high):
 
 
 def PyList_Sort(lst):
-    lst.sort()
-    return 0  # Sam
+    return lst.sort() 
 
 
 dtype_t = np.int_
@@ -1877,23 +1898,12 @@ def double_max(a, b):
     return a if a >= b else b
 
 
-def square(x):
-    return x * x
-
-
 def cint(x):
     return int(x)
 
 
 def modulo(a, b):
-    if 0 <= a < b:
-        return a
-    elif a < 0:
-        ent = int(a / b)
-        return b + (a - ent * b)
-    else:
-        ent = int(a / b)
-        return a - ent * b
+        return  a % b
 
 
 def calculate_azimut(x1, y1, x2, y2):
@@ -1920,8 +1930,7 @@ def diff_az(az_to, az_from):
 
 def check_focal_nb(raster, rayon, Csize, x1, y1, nline, ncol, trans_slope_hairpin):
     cote = int(rayon / Csize)
-    nbsup = 0
-    nb = 0
+    nbsup,nb = 0,0
     for y in range(max(0, y1 - cote), min(nline, y1 + cote + 1)):
         for x in range(max(0, x1 - cote), min(ncol, x1 + cote + 1)):
             if sqrt((x1 - x) ** 2 + (y1 - y) ** 2) * Csize > rayon:
@@ -1977,13 +1986,13 @@ def get_intersect(a1y, a1x, a2y, a2x, b1y, b1x, b2y, b2x):
         inter = 0
     if z != 0:
         xi, yi = x / z, y / z
-        if xi < max(min(a1x, a2x), min(b1x, b2x)):
+        if xi < double_max(double_min(a1x, a2x), double_min(b1x, b2x)):
             inter = 0
-        elif xi > min(max(a1x, a2x), max(b1x, b2x)):
+        elif xi > double_min(double_max(a1x, a2x), double_max(b1x, b2x)):
             inter = 0
-        if yi < max(min(a1y, a2y), min(b1y, b2y)):
+        if yi < double_max(double_min(a1y, a2y), double_min(b1y, b2y)):
             inter = 0
-        elif yi > min(max(a1y, a2y), max(b1y, b2y)):
+        elif yi > double_min(double_max(a1y, a2y), double_max(b1y, b2y)):
             inter = 0
     return inter
 
@@ -2054,12 +2063,12 @@ def check_profile(yc, xc, y, x, slope_perc, dtm, Csize, max_diff_z, Obs, Obs2, L
             sumobs2 += Obs2[ys[i], xs[i]]
         z = dtm[ys[i], xs[i]]
         zline = slope_perc / 100. * Dhor + zo
-        diffz = max(diffz, abs(zline - z))
+        diffz = double_max(diffz, abs(zline - z))
         if diffz > max_diff_z:
             test = 0
             break
     if test:
-        newLsl += min(sumobs2 * Csize, Dhor)
+        newLsl += double_min(sumobs2 * Csize, Dhor)
         if newLsl > Lmax_ab_sl:
             test = 0
     return test, newLsl
@@ -2332,7 +2341,7 @@ def calcul_distance_de_cout(yE, xE, zone_rast, Csize, Max_distance=100000):
     for j in range(nbneig):
         y = coords[j, 0] + yE
         x = coords[j, 1] + xE
-        if 0 <= y < nline and 0 <= x < ncol:
+        if y<0 or y>=nline or x<0 or x>=ncol:
             if zone_rast[y, x] == 1:
                 Dist = dists_index[j]
                 if Out_distance[y, x] > Dist:
@@ -2350,7 +2359,7 @@ def calcul_distance_de_cout(yE, xE, zone_rast, Csize, Max_distance=100000):
             for j in range(nbneig):
                 y = coords[j, 0] + y1
                 x = coords[j, 1] + x1
-                if 0 <= y < nline and 0 <= x < ncol:
+                if y<0 or y>=nline or x<0 or x>=ncol:
                     if zone_rast[y, x] == 1:
                         dist_ac = Out_distance[y1, x1] + dists_index[j]
                         if Out_distance[y, x] > dist_ac:
