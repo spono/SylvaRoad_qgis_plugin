@@ -1035,156 +1035,6 @@ def build_NeibTable(D_neighborhood,Csize,dtm,Obs,min_slope,max_slope):
     return IdVois[:,:nbneibmax],Id[:,:nbneibmax],Tab_corresp,IdPix,Slope[:,:nbneibmax],dists_index,azimuts
     
 
-def Astar_force_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
-                   min_slope,max_slope,penalty_xy,penalty_z,Dist_to_End,
-                   Local_Slope,Perc_Slope,Csize,dtm,max_diff_z,
-                   trans_slope_all,newObs,angle_hairpin,Lmax_ab_sl,Radius,
-                   D_neighborhood,prop_sl_max=0.25,max_slope_hairpin=10,tal=1.5):
-    
-    #1. Create neighborhood matrix with azimut and distance 
-    nrows,ncols=Dist_to_End.shape
-    nbpart = len(segments)
-    test=1
-    FullPath = []  
-    max_slope_change = 2.*max(min_slope,max_slope) 
-    max_hairpin_angle = 180-max_slope_hairpin*0.01/tal*180*(1+1/(2*math.pi))
-    Dmin = (180-max_hairpin_angle)*2*math.pi*2*Radius/360. 
-    Obs2 = np.int8(Perc_Slope>trans_slope_all)
-    
-    nbpix = Tab_corresp.shape[0]    
-    Best = np.zeros((nbpix,11),dtype=np.float32) 
-    Best[:,0]=-1
-    Best[:,6]=-1
-    Best[:,1]=10000000    
-    idseg=0
-    seg = segments[0]
-    yS,xS = seg[0]   
-    Dtocp = Dist_to_End[yS,xS]
-    max_nbptbef=max(int(D_neighborhood/Csize),7)  
-    
-    #idcel cost_so_far Dplan Slope_from az_from came_from hairpin_from Lsl idseg Dtocp ishairpin
-    #0     1           2     3          4       5         6            7   8     9     10              
-     
-    for idseg,seg in enumerate(segments):    
-        if not test:
-            break
-        yS,xS = seg[0]
-        yE,xE = goal= seg[1]
-        bufgoal = 0
-        if idseg==nbpart-1:
-            bufgoal = seg[2]
-     
-        idcel = IdPix[yS,xS]
-        if Best[idcel,0]<0:            
-            Best[idcel]=idcel,0,0,0,-1,-1,0,0,0,Dist_to_End[yS,xS],0
-     
-        idend = IdPix[yE,xE]
-        #2. initiate search          
-        #frontier = PriorityQueue()
-        frontier = PriorityQueue()
-        #frontier.put(start, Dist_to_End[yS,xS],Dist_to_End[yS,xS]) 
-        frontier.put(idcel, Dist_to_End[yS,xS],Dist_to_End[yS,xS])               
-           
-        str_process = " %"
-        test=0
-        loop=0
-        mindist_to_end = 10000000
-        
-        closetogoal = PriorityQueue2()        
-        key_frontier= {}
-                    
-        if segments[-1][1]==goal:
-            take_dtoend = 1
-            Dtocp = Dist_to_End[yS,xS]
-        else:
-            take_dtoend = 0
-            Dtocp = Distplan(yS,xS,yE,xE)*Csize  
-        
-        #3. search best path   
-        while not frontier.empty() and not test:
-            av = int(100*(1-mindist_to_end/Dtocp))   
-            if loop>0:        
-                console_info("    Segment "+str(idseg+1)+" - Progression %d" % av + str_process)                 
-            
-            idcurrent = frontier.get()   
-                              
-           
-            if idcurrent == idend:
-                test=1
-                break
-            
-            nbptbef = Best[idcurrent,8]
-            if nbptbef==0:
-                Best,add_to_frontier,mindist_to_end=calc_init(idcurrent,Id,IdVois,Slope,
-                                                                 Best,Tab_corresp,Az,Dist,
-                                                                 newObs,Obs2,Dist_to_End,dtm,            
-                                                                 Csize,max_diff_z,D_neighborhood,Lmax_ab_sl,
-                                                                 take_dtoend,yE,xE,mindist_to_end)
-                
-            
-            else:
-                yc,xc =Tab_corresp[idcurrent,0], Tab_corresp[idcurrent,1] 
-                Dist_current_goal = Distplan(yc,xc,yE,xE)*Csize      
-                if Dist_current_goal<=bufgoal: 
-                    prev = int(Best[idcurrent,5])
-                    difangle = diff_az(Best[prev,4],Best[idcurrent,4])
-                    penalty_dir = penalty_xy*(difangle/angle_hairpin)**2
-                    prev2 = int(Best[prev,5])
-                    difangle2 = diff_az(Best[prev2,4],Best[prev,4])
-                    penalty_dir += penalty_xy*(difangle2/angle_hairpin)**2
-                    closetogoal.put(idcurrent,
-                                    Dist_current_goal+penalty_dir,
-                                    Dist_current_goal,
-                                    max(difangle,difangle2))
-                
-                Best,add_to_frontier,mindist_to_end = basic_calc(idcurrent,Id,IdVois,Slope,
-                                                                    Best,Tab_corresp,Az,Dist,
-                                                                    newObs,Obs2,Dist_to_End,dtm,Local_Slope[yc,xc]/100.,           
-                                                                    Csize,max_diff_z,D_neighborhood,Lmax_ab_sl,
-                                                                    take_dtoend,yE,xE,mindist_to_end,prop_sl_max,
-                                                                    angle_hairpin,Radius,penalty_xy,penalty_z,
-                                                                    max_slope_change,max_hairpin_angle,Dmin,max_nbptbef)
-                
-            for idvois in add_to_frontier:                 
-                theo_d = round(Best[idvois,1]+Best[idvois,9],1)
-                dtocp = round(Best[idvois,9],1)
-                if (idvois,theo_d,dtocp) not in key_frontier:
-                    frontier.put(idvois,theo_d,dtocp)  
-                    key_frontier[(idvois,theo_d,dtocp) ]=1    
-                
-            loop+=1 
-            # console_info(loop)              
-                   
-        #4. reconstruct path
-        Path=None
-        if test or not closetogoal.empty():
-            if not test:
-                angle,idclosest= closetogoal.get()
-                yE,xE=Tab_corresp[int(idclosest),0],Tab_corresp[int(idclosest),1]            
-            Path =reconstruct_path(IdPix[yE,xE], IdPix[yS,xS], Best,Tab_corresp) 
-            FullPath.append(Path)
-            console_info(QCoreApplication.translate("MainWindow","    Point de passage ID_POINT "+str(idseg+2)+" atteind"))
-        else:
-            console_info(QCoreApplication.translate("MainWindow","    Impossible d'atteindre le Point de passage ID_POINT "+str(idseg+2)))
-                    
-    Path=None
-    if len(FullPath)>0:
-        nb = 1
-        for por in FullPath: 
-            nb+=por.shape[0]           
-        Path = np.zeros((nb-1,7))
-        idline=FullPath[0].shape[0]
-        Path[0:idline]=FullPath[0] 
-        for i in range(1,len(FullPath)):            
-            idline2=FullPath[i].shape[0]-1
-            Path[idline:idline+idline2]=FullPath[i][1:]
-            idline+=idline2            
-        Path=Path[:idline] 
-        Path[1:,-1]-=Path[:-1,-1]
-        
-    return Path,test
-
-
 def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
                  min_slope,max_slope,penalty_xy,penalty_z,Dist_to_End,
                  Local_Slope,Perc_Slope,Csize,dtm,max_diff_z,
@@ -1792,102 +1642,15 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
 
 
 #############################################################
-        
-
-
-
 
 
 #CYTHON
         
 
-
-
-
-
-
-
-
-
-
-
-
-
 #############################################################
-        
-
-def degrees(x):
-    return math.degrees(x)
-
 
 def isnan(x):
     return math.isnan(x)
-
-
-def npy_isnan(x):
-    return np.isnan(x)
-
-
-def PyList_Size(lst):
-    return len(lst)
-
-
-def PyList_Append(lst, item):
-    return lst.append(item)  
-
-
-def PyList_GetSlice(lst, low, high):
-    return lst[low:high]
-
-
-def PyList_Sort(lst):
-    return lst.sort() 
-
-
-dtype_t = np.int_
-dtypef_t = np.float_
-dtype8_t = np.int8
-dtypeu8_t = np.uint8
-dtypeu16_t = np.uint16
-dtype16_t = np.int16
-dtype32_t = np.int32
-dtype64_t = np.int64
-dtypef32_t = np.float32
-
-
-def max_array(a):
-    max_a = a[0]
-    for item in range(1, a.shape[0]):
-        if a[item] > max_a:
-            max_a = a[item]
-    return max_a
-
-
-def max_array_f(a):
-    max_a = a[0]
-    for item in range(1, a.shape[0]):
-        if a[item] > max_a:
-            max_a = a[item]
-    return max_a
-
-
-def sum_array(a):
-    summ = a[0]
-    for item in range(1, a.shape[0]):
-        summ += a[item]
-    return summ
-
-
-def asinh(x):
-    return log(x + sqrt(1 + x * x))
-
-
-def int_max(a, b):
-    return a if a >= b else b
-
-
-def int_min(a, b):
-    return a if a <= b else b
 
 
 def double_min(a, b):
@@ -1898,14 +1661,6 @@ def double_max(a, b):
     return a if a >= b else b
 
 
-def cint(x):
-    return int(x)
-
-
-def modulo(a, b):
-        return  a % b
-
-
 def calculate_azimut(x1, y1, x2, y2):
     DX = x2 - x1
     DY = y2 - y1
@@ -1913,12 +1668,14 @@ def calculate_azimut(x1, y1, x2, y2):
     Fact = -1 if x2 > x1 else 1
     Angle = acos(DY / Deuc) * 180 / pi
     Angle *= Fact
-    return modulo(Angle, 360)
+    Angle = Angle % 360
+    return Angle 
 
 
 def conv_az_to_polar(az):
     val = (360 - (az - 90))
-    return modulo(val, 360)
+    val = val % 360
+    return val
 
 
 def diff_az(az_to, az_from):
@@ -1952,21 +1709,6 @@ def calc_local_slope(raster, rayon, Csize, trans_slope_hairpin):
     return local_slope
 
 
-def check_ptbef(pt_neig, pt_current):
-    test = 0
-    if pt_neig[1, 0] == pt_current[0, 0]:
-        test += 1
-    if test > 0 and pt_neig[1, 1] == pt_current[0, 1]:
-        test += 1
-    if test > 1 and pt_neig[2, 0] == pt_current[1, 0]:
-        test += 1
-    if test > 2 and pt_neig[2, 1] == pt_current[1, 1]:
-        test += 1
-    if test == 4:
-        test = 1
-    return test
-
-
 def get_intersect(a1y, a1x, a2y, a2x, b1y, b1x, b2y, b2x):
     l1y = a1x - a2x
     l1x = a2y - a1y
@@ -1994,18 +1736,6 @@ def get_intersect(a1y, a1x, a2y, a2x, b1y, b1x, b2y, b2x):
             inter = 0
         elif yi > double_min(double_max(a1y, a2y), double_max(b1y, b2y)):
             inter = 0
-    return inter
-
-
-def check_intersect(Line_before, Line_after, nbptbef):
-    b1y, b1x = Line_after[0, 0], Line_after[0, 1]
-    b2y, b2x = Line_after[1, 0], Line_after[1, 1]
-    for i in range(nbptbef - 1):
-        a1y, a2y = Line_before[i, 0], Line_before[i + 1, 0]
-        a1x, a2x = Line_before[i, 1], Line_before[i + 1, 1]
-        inter = get_intersect(a1y, a1x, a2y, a2x, b1y, b1x, b2y, b2x)
-        if inter:
-            return inter
     return inter
 
 
