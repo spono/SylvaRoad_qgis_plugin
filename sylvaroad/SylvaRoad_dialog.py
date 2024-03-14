@@ -30,7 +30,7 @@ from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import QCoreApplication
 from qgis.core import QgsMessageLog, Qgis
 import numpy as np
-import os,math,gc,datetime,sys
+import os,math,gc,datetime
 from osgeo import gdal,ogr,osr
 import _heapq as heapq
 from shapely import speedups
@@ -159,26 +159,6 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
         if 'Wspace' not in locals() or 'Wspace' not in globals() :
             Wspace = Result_Dir
 
-        ##test:
-            console_info(f"Wspace:  {Wspace}")
-            console_info(f"Dtm_file:  {Dtm_file}")
-            console_info(f"Obs_Dir:  {Obs_Dir}")
-            console_info(f"Waypoints_file:  {Waypoints_file}")
-            console_info(f"Property_file:  {Property_file}")
-            console_info(f"Result_Dir:  {Result_Dir}")
-            console_info(f"trans_slope_all: {trans_slope_all}")
-            console_info(f"trans_slope_hair: {trans_slope_hairpin}")
-            console_info(f"min_slope: {min_slope}")
-            console_info(f"max_slope: {max_slope}")
-            console_info(f"penalty_xy: {penalty_xy}")
-            console_info(f"penalty_z: {penalty_z}")
-            console_info(f"D_neighborhood: {D_neighborhood}")
-            console_info(f"max_diff_z: {max_diff_z}")
-            console_info(f"angle_hairpin: {angle_hairpin}")
-            console_info(f"Lmax_ab_sl: {Lmax_ab_sl}")
-            console_info(f"Radius: {Radius}")
-        ##test
-
 
         road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,
                                 trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
@@ -247,7 +227,7 @@ def build_radius(R):
     return coords
 
 
-def diff_az(az_to,az_from):   
+def diff(az_to,az_from):   
     if az_to>az_from:
         return min((360-(az_to-az_from),(az_to-az_from)))
     else:
@@ -489,7 +469,7 @@ def raster_get_info(in_file_name):
     src_proj = osr.SpatialReference(wkt=source_ds.GetProjection())
     src_ncols = source_ds.RasterXSize
     src_nrows = source_ds.RasterYSize
-    xmin,Csize_x,a,ymax,b,Csize_y = source_ds.GetGeoTransform()
+    xmin,Csize_x,_,ymax,_,Csize_y = source_ds.GetGeoTransform()
     ymin = ymax+src_nrows*Csize_y
     nodata = source_ds.GetRasterBand(1).GetNoDataValue()
     names = ['ncols', 'nrows', 'xllcorner', 'yllcorner', 'cellsize','NODATA_value']
@@ -505,7 +485,7 @@ def check_files(Dtm_file,Waypoints_file,Property_file):
     mess=QCoreApplication.translate("MainWindow","\nLES PROBLEMES SUIVANTS ONT ETE IDENTIFIES CONCERNANT LES ENTREES SPATIALES: \n")
     #Check DTM    
     try:
-        names,values,proj,Extent = raster_get_info(Dtm_file)  
+        _,values,_,_ = raster_get_info(Dtm_file)  
         Csize = values[4]
         if values[5]==None:           
             mess+=QCoreApplication.translate("MainWindow"," -   Raster MNT : Aucune valeur de NoData definie. Attention, cela peut engendrer des résultats éronnés.\n" )
@@ -1042,16 +1022,13 @@ def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
                  D_neighborhood,prop_sl_max=0.25,tal=1.5,lpla=4):
     
     #1. Create neighborhood matrix with azimut and distance 
-    nrows,ncols=Dist_to_End.shape
     nbpart = len(segments)
     test=1    
     max_slope_change = 2.*max(min_slope,max_slope) 
     max_slope_hairpin= max_slope*0.5+2 #From observation on previous simulation
     max_hairpin_angle = 180-max_slope_hairpin*0.01/tal*180*(1+1/(2*math.pi)) #Distance on the slope between roads
-    max_hairpin_angle -= lpla*360/(2*math.pi*2*Radius)#Additional Distance corresponding to platform width
-    Dmin = (180-max_hairpin_angle)*2*math.pi*2*Radius/360. 
+    max_hairpin_angle -= lpla*360/(2*math.pi*2*Radius)#Additional Distance corresponding to platform width 
     Obs2 = np.int8(Perc_Slope>trans_slope_all)
-    
     nbpix = Tab_corresp.shape[0]    
     Best = np.zeros((nbpix,11),dtype=np.float32) 
     Best[:,0]=-1
@@ -1062,7 +1039,6 @@ def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
     seg = segments[0]
     yS,xS = seg[0]   
     Dtocp = Dist_to_End[yS,xS]
-    max_nbptbef=max(int(D_neighborhood/Csize),7)  
     
     #idcel cost_so_far Dplan Slope_from az_from came_from hairpin_from Lsl idseg Dtocp ishairpin 
     #0     1           2     3          4       5         6            7   8     9     10              
@@ -1136,7 +1112,7 @@ def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
                                                                     Csize,max_diff_z,D_neighborhood,Lmax_ab_sl,
                                                                     take_dtoend,yE,xE,mindist_to_end,prop_sl_max,
                                                                     angle_hairpin,Radius,penalty_xy,penalty_z,
-                                                                    max_slope_change,max_hairpin_angle,Dmin,max_nbptbef)    
+                                                                    max_slope_change,max_hairpin_angle)    
                 
             for idvois in add_to_frontier:                 
                 theo_d = round(Best[idvois,1]+Best[idvois,9],1)
@@ -1311,7 +1287,7 @@ def get_points_from_waypoints(Waypoints_file,Dtm_file):
         idpt = feat.GetField("ID_POINT")
         buff = feat.GetField("BUFF_POINT") 
         seg = []  
-        mx,my,z = geom.GetPoint(0)
+        mx,my,_ = geom.GetPoint(0)
         #Convert from map to pixel coordinates.
         #Only works for geotransforms with no rotation.
         px = int((mx - gt[0]) / gt[1]) #x pixel
@@ -1354,7 +1330,7 @@ def save_param_file(Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,
     np.save(Rspace+"SylvaRoaD_param.npy",param)
 
 
-def ArrayToGtiff(Array,file_name,Extent,nrows,ncols,Csize,road_network_proj,nodata_value,raster_type='INT32'):
+def ArrayToGtiff(Array,file_name,Extent,nrows,ncols,road_network_proj,nodata_value,raster_type='INT32'):
     """
     Create Tiff raster from numpy array   
     ----------
@@ -1562,8 +1538,7 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
         #Compute Slope raster and Local Slope raster
         Perc_Slope = get_Slope(Dtm_file)
         Perc_Slope[dtm==-9999]=-9999
-        Local_Slope = calc_local_slope(Perc_Slope,1.25*Radius,Csize,
-                                          trans_slope_hairpin)                            
+        Local_Slope = calc_local_slope(Perc_Slope,1.25*Radius,Csize,trans_slope_hairpin)                            
           
         #Build neigborhood table
         IdVois, Id, Tab_corresp,IdPix,Slope,Dist,Az = build_NeibTable(D_neighborhood,Csize,dtm,np.int8(Obs>0),min_slope,max_slope)
@@ -1614,8 +1589,7 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
                     NewPath = trace_lace(Path, Radius,Extent,Csize,angle_hairpin,dtm,coefplat=2)
                     NewPath_to_lineshape(NewPath,Rspace+'Troncon_'+str(int(id_tron))+'_lacets_corriges.shp',proj)                     
                     if  Generaltest==0:
-                        ArrayToGtiff(Local_Slope,Rspace+"PenteLocale_Lacet",Extent,nrows,ncols,
-                                 Csize,road_network_proj,255,raster_type='UINT8') 
+                        ArrayToGtiff(Local_Slope,Rspace+"PenteLocale_Lacet",Extent,nrows,ncols,road_network_proj,255,raster_type='UINT8') 
                         Generaltest=1
                     #Path_to_lace(Path,Rspace+'Lacets_Troncon_'+str(int(id_tron))+'.shp',proj,Extent,Csize,dtm)
                 txt = QCoreApplication.translate("MainWindow",'\n    Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Un chemin optimal a été trouvé. ')
@@ -1649,15 +1623,12 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
 
 #############################################################
 
-def isnan(x):
-    return math.isnan(x)
 
-
-def double_min(a, b):
+def mini(a, b):
     return a if a <= b else b
 
 
-def double_max(a, b):
+def maxi(a, b):
     return a if a >= b else b
 
 
@@ -1728,13 +1699,13 @@ def get_intersect(a1y, a1x, a2y, a2x, b1y, b1x, b2y, b2x):
         inter = 0
     if z != 0:
         xi, yi = x / z, y / z
-        if xi < double_max(double_min(a1x, a2x), double_min(b1x, b2x)):
+        if xi < maxi(mini(a1x, a2x), mini(b1x, b2x)):
             inter = 0
-        elif xi > double_min(double_max(a1x, a2x), double_max(b1x, b2x)):
+        elif xi > mini(maxi(a1x, a2x), maxi(b1x, b2x)):
             inter = 0
-        if yi < double_max(double_min(a1y, a2y), double_min(b1y, b2y)):
+        if yi < maxi(mini(a1y, a2y), mini(b1y, b2y)):
             inter = 0
-        elif yi > double_min(double_max(a1y, a2y), double_max(b1y, b2y)):
+        elif yi > mini(maxi(a1y, a2y), maxi(b1y, b2y)):
             inter = 0
     return inter
 
@@ -1793,12 +1764,12 @@ def check_profile(yc, xc, y, x, slope_perc, dtm, Csize, max_diff_z, Obs, Obs2, L
             sumobs2 += Obs2[ys[i], xs[i]]
         z = dtm[ys[i], xs[i]]
         zline = slope_perc / 100. * Dhor + zo
-        diffz = double_max(diffz, abs(zline - z))
+        diffz = maxi(diffz, abs(zline - z))
         if diffz > max_diff_z:
             test = 0
             break
     if test:
-        newLsl += double_min(sumobs2 * Csize, Dhor)
+        newLsl += mini(sumobs2 * Csize, Dhor)
         if newLsl > Lmax_ab_sl:
             test = 0
     return test, newLsl
@@ -1941,8 +1912,7 @@ def get_pix_bufgoal_and_update(Best, Tab_corresp, bufgoal, start, Csize, yE, xE)
 def basic_calc(idcurrent, Id, IdVois, Slope, Best, Tab_corresp, Az, Dist, newObs, Obs2,
                Dist_to_End, dtm, LocSlope, Csize, max_diff_z, D_neighborhood, Lmax_ab_sl,
                take_dtoend, yE, xE, mindist_to_end, prop_sl_max, angle_hairpin, Radius,
-               penalty_xy, penalty_z, max_slope_change, max_hairpin_angle, Dmin, max_nbptbef,
-               modhair=1.5):
+               penalty_xy, penalty_z, max_slope_change, max_hairpin_angle,modhair=1.5):
 
     xc = Tab_corresp[idcurrent, 1]
     yc = Tab_corresp[idcurrent, 0]
