@@ -4,27 +4,27 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="95"/>
+        <location filename="../SylvaRoad_dialog.py" line="91"/>
         <source>Select a file</source>
         <translation>Select a file</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="97"/>
+        <location filename="../SylvaRoad_dialog.py" line="93"/>
         <source>Select a folder</source>
         <translation>Select a folder</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="149"/>
+        <location filename="../SylvaRoad_dialog.py" line="145"/>
         <source>SylvaRoaD Launching...</source>
         <translation>SylvaRoaD Launching...</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="188"/>
+        <location filename="../SylvaRoad_dialog.py" line="164"/>
         <source>SylvaRoaD finished</source>
         <translation>SylvaRoaD finished</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="505"/>
+        <location filename="../SylvaRoad_dialog.py" line="487"/>
         <source>
 LES PROBLEMES SUIVANTS ONT ETE IDENTIFIES CONCERNANT LES ENTREES SPATIALES: 
 </source>
@@ -33,208 +33,208 @@ THE FOLLOWING ISSUES HAVE BEEN IENTIFIED REGARDING THE SPATIAL INPUTS:
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="511"/>
+        <location filename="../SylvaRoad_dialog.py" line="493"/>
         <source> -   Raster MNT : Aucune valeur de NoData definie. Attention, cela peut engendrer des résultats éronnés.
 </source>
         <translation> -   DTM Raster : NoData value not defined. Caution, this may lead to erroneous results.
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="514"/>
+        <location filename="../SylvaRoad_dialog.py" line="496"/>
         <source> -   Raster MNT :  Le chemin d&apos;acces est manquant ou incorrect. Ce raster est obligatoire
 </source>
         <translation> -   DTM Raster : The file path is missing or incorrect. This raster is mandatory
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="521"/>
+        <location filename="../SylvaRoad_dialog.py" line="503"/>
         <source> -  Couche points de passage : Le champs &apos;ID_TRON&apos; est manquant
 </source>
-        <translation> -  Waypoint layer: The &apos;ID_TRON&apos; field is missing
+        <translation> -  Waypoint layer: The 'ID_TRON' field is missing
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="524"/>
-        <source> -  Couche points de passage : Veuillez remplir le champs &apos;ID_TRON&apos; pour toutes les entités
+        <location filename="../SylvaRoad_dialog.py" line="506"/>
+        <source> -  Couche points de passage : Veuillez remplir le champs 'ID_TRON' pour toutes les entités
 </source>
-        <translation> -  Waypoint layer: The &apos;ID_TRON&apos; field is not specified for all the entities, please fill it
+        <translation> -  Waypoint layer: The 'ID_TRON' field is not specified for all the entities, please fill it
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="529"/>
+        <location filename="../SylvaRoad_dialog.py" line="511"/>
         <source> -  Couche points de passage : Le champs &apos;ID_POINT&apos; est manquant
 </source>
-        <translation> -  Waypoint layer: The &apos;ID_POINT&apos; field is missing
+        <translation> -  Waypoint layer: The 'ID_POINT' field is missing
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="532"/>
-        <source> -  Couche points de passage : Veuillez remplir le champs &apos;ID_POINT&apos; pour toutes les entités
+        <location filename="../SylvaRoad_dialog.py" line="514"/>
+        <source> -  Couche points de passage : Veuillez remplir le champs 'ID_POINT' pour toutes les entités
 </source>
-        <translation> -  Waypoint layer: The &apos;ID_POINT&apos; field is not specified for all the entities, please fill it
+        <translation> -  Waypoint layer: The 'ID_POINT' field is not specified for all the entities, please fill it
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="537"/>
+        <location filename="../SylvaRoad_dialog.py" line="519"/>
         <source> -  Couche points de passage : Le champs &apos;BUFF_POINT&apos; est manquant
 </source>
-        <translation> -  Waypoint layer: The &apos;BUFF_POINT&apos; field is missing
+        <translation> -  Waypoint layer: The 'BUFF_POINT' field is missing
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="540"/>
-        <source> -  Couche points de passage : Veuillez remplir le champs &apos;BUFF_POINT&apos; pour toutes les entités
+        <location filename="../SylvaRoad_dialog.py" line="522"/>
+        <source> -  Couche points de passage : Veuillez remplir le champs 'BUFF_POINT' pour toutes les entités
 </source>
-        <translation> -  Waypoint layer: The &apos;BUFF_POINT&apos; field is not specified for all the entities, please fill it
+        <translation> -  Waypoint layer: The 'BUFF_POINT' field is not specified for all the entities, please fill it
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="543"/>
+        <location filename="../SylvaRoad_dialog.py" line="525"/>
         <source> -   Couche points de passage : Le chemin d&apos;acces est manquant ou incorrect. Cette couche est obligatoire
 </source>
         <translation> -  Waypoints layer : The file path is missing or icorrect. This raster is mandatory
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="551"/>
+        <location filename="../SylvaRoad_dialog.py" line="533"/>
         <source> -  Couche foncier : Le champs &apos;FONC_OK&apos; est manquant
 </source>
-        <translation> -  Properties layer: The &apos;FONC_OK&apos; field is missing
+        <translation> -  Properties layer: The 'FONC_OK' field is missing
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="554"/>
-        <source> -  Couche foncier : Veuillez remplir le champs &apos;FONC_OK&apos; pour toutes les entités
+        <location filename="../SylvaRoad_dialog.py" line="536"/>
+        <source> -  Couche foncier : Veuillez remplir le champs 'FONC_OK' pour toutes les entités
 </source>
-        <translation> -  Properties layer: The &apos;FONC_OK&apos; field is not specified for all the entities, please fill it
+        <translation> -  Properties layer: The 'FONC_OK' field is not specified for all the entities, please fill it
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="557"/>
+        <location filename="../SylvaRoad_dialog.py" line="539"/>
         <source> -   Couche foncier : Le chemin d&apos;acces est incorrect. 
 </source>
         <translation> -   Properties Layer : The file path is missing or incorrect. 
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="560"/>
+        <location filename="../SylvaRoad_dialog.py" line="542"/>
         <source>MERCI DE CORRIGER AVANT DE RELANCER L&apos;OUTIL
 </source>
         <translation>PLEASE FIX  BEFORE RELAUNCHING SYLVAROAD
 </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1301"/>
+        <location filename="../SylvaRoad_dialog.py" line="1129"/>
         <source>    Segment </source>
         <translation>    Segment </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1301"/>
+        <location filename="../SylvaRoad_dialog.py" line="1129"/>
         <source> - Progression %d</source>
         <translation> - Progression %d</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1316"/>
+        <location filename="../SylvaRoad_dialog.py" line="1144"/>
         <source>     - Impossible d&apos;atteindre le Point de passage ID_POINT </source>
-        <translation>     - Impossible to reach the waypoint &apos;ID_POINT&apos; </translation>
+        <translation>     - Impossible to reach the waypoint 'ID_POINT' </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1327"/>
+        <location filename="../SylvaRoad_dialog.py" line="1155"/>
         <source>     - Point de passage ID_POINT </source>
         <translation>     - Waypoint ID_POINT </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1327"/>
+        <location filename="../SylvaRoad_dialog.py" line="1155"/>
         <source> atteind</source>
         <translation> reached</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1408"/>
+        <location filename="../SylvaRoad_dialog.py" line="1236"/>
         <source>FICHIERS UTILISES POUR LA MODELISATION:</source>
         <translation>FILES USED FOR THE MODELING:</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1409"/>
+        <location filename="../SylvaRoad_dialog.py" line="1237"/>
         <source>   - MNT :                   </source>
         <translation>   - DTM :                   </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1410"/>
+        <location filename="../SylvaRoad_dialog.py" line="1238"/>
         <source>     Résolution (m) :        </source>
         <translation>     Resolution (m) :        </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1411"/>
+        <location filename="../SylvaRoad_dialog.py" line="1239"/>
         <source>   - Points de passage :     </source>
         <translation>   - Waypoints :     </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1412"/>
+        <location filename="../SylvaRoad_dialog.py" line="1240"/>
         <source>   - Foncier :               </source>
         <translation>   - Property :               </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1413"/>
+        <location filename="../SylvaRoad_dialog.py" line="1241"/>
         <source>   - Dossier Obstacles :     </source>
         <translation>   - Obstacle Directory :     </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1415"/>
+        <location filename="../SylvaRoad_dialog.py" line="1243"/>
         <source>PARAMETRES UTILISES POUR LA MODELISATION:</source>
         <translation>PARAMETERS USED FOR THE MODELING:</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1416"/>
+        <location filename="../SylvaRoad_dialog.py" line="1244"/>
         <source>   - Pente en long min. :</source>
         <translation>   - Minimum longitudinal slope :</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1417"/>
+        <location filename="../SylvaRoad_dialog.py" line="1245"/>
         <source>   - Pente en long max. :</source>
         <translation>   - Maximum longitudinal slope :</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1418"/>
+        <location filename="../SylvaRoad_dialog.py" line="1246"/>
         <source>   - Pente en travers max. en tout point :</source>
         <translation>   - Max. cross slope at any point :</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1419"/>
+        <location filename="../SylvaRoad_dialog.py" line="1247"/>
         <source>   - Pente en travers max. pour implanter un virage en lacet :</source>
         <translation>   - Max. cross slope to create a harpin :</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1420"/>
+        <location filename="../SylvaRoad_dialog.py" line="1248"/>
         <source>   - Pénalité de changement de direction :</source>
         <translation>   - Change of direction penalty:</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1421"/>
+        <location filename="../SylvaRoad_dialog.py" line="1249"/>
         <source>   - Pénalité de changement du sens de pente en long :</source>
         <translation>   - Penalty for changing the slope direction longitudinally :</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1422"/>
+        <location filename="../SylvaRoad_dialog.py" line="1250"/>
         <source>   - Rayon de recherche autour d&apos;un pixel :</source>
         <translation>   - Search radius around a pixel :</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1423"/>
+        <location filename="../SylvaRoad_dialog.py" line="1251"/>
         <source>   - Différence max. entre altitude du terrain et altitude théorique du trace :</source>
         <translation>   - Maximum difference between terrain altitude and theoretical altitude of the trace:</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1424"/>
+        <location filename="../SylvaRoad_dialog.py" line="1252"/>
         <source>   - Angle au-delà duquel un virage est considéré comme lacet :</source>
         <translation>   - Angle beyond which a turn is considered hairpin :</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1425"/>
+        <location filename="../SylvaRoad_dialog.py" line="1253"/>
         <source>   - Rayon de braquage appliqué aux lacets :</source>
         <translation>   - Turn radius for hairpin :</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1426"/>
+        <location filename="../SylvaRoad_dialog.py" line="1254"/>
         <source>   - Longueur cumulée max. avec Pente en travers &gt; Pente en travers max. :</source>
         <translation>   - Maximum cumulative length with cross slope &gt; maximum cross slope :</translation>
     </message>
@@ -244,7 +244,7 @@ THE FOLLOWING ISSUES HAVE BEEN IENTIFIED REGARDING THE SPATIAL INPUTS:
         <translation type="obsolete">Parametre_simulation.txt</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1432"/>
+        <location filename="../SylvaRoad_dialog.py" line="1260"/>
         <source>SylvaRoaD</source>
         <translation>SylvaRoaD</translation>
     </message>
@@ -254,124 +254,124 @@ THE FOLLOWING ISSUES HAVE BEEN IENTIFIED REGARDING THE SPATIAL INPUTS:
         <translation type="obsolete">Program version: 0.2 03/2024</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1436"/>
+        <location filename="../SylvaRoad_dialog.py" line="1264"/>
         <source>Auteur: Zenner Yoann - Cosylval</source>
         <translation>Author: Zenner Yoann - Cosylval</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1437"/>
+        <location filename="../SylvaRoad_dialog.py" line="1265"/>
         <source>Date et heure de lancement du script:</source>
         <translation>Date an time at script launch:</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1438"/>
-        <source>Date et heure a la fin de l&apos;éxécution du script:</source>
+        <location filename="../SylvaRoad_dialog.py" line="1266"/>
+        <source>Date et heure a la fin de l'éxécution du script:</source>
         <translation>Date and time at the end of script execution :</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1439"/>
-        <source>Temps total d&apos;éxécution du script:</source>
+        <location filename="../SylvaRoad_dialog.py" line="1267"/>
+        <source>Temps total d'éxécution du script:</source>
         <translation>Total execution time of the script:</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1783"/>
+        <location filename="../SylvaRoad_dialog.py" line="1609"/>
         <source>
     Tronçon n°</source>
         <translation>
     Segment number</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1565"/>
+        <location filename="../SylvaRoad_dialog.py" line="1393"/>
         <source>Le point initial n&apos;est pas dans l&apos;emprise du MNT</source>
         <translation>The starting point is not within the extent of the DTM</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1570"/>
-        <source>Le point initial n&apos;est pas dans le parcellaire autorisé</source>
+        <location filename="../SylvaRoad_dialog.py" line="1398"/>
+        <source>Le point initial n'est pas dans le parcellaire autorisé</source>
         <translation>The starting point is not within the authorized parcel</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1575"/>
+        <location filename="../SylvaRoad_dialog.py" line="1403"/>
         <source>Le point initial n&apos;a pas de valeur MNT valide</source>
         <translation>The starting point has no valid DTM value</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1577"/>
+        <location filename="../SylvaRoad_dialog.py" line="1405"/>
         <source>Le point initial est sur un obstacle</source>
         <translation>The starting point is on an obstacle</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1586"/>
+        <location filename="../SylvaRoad_dialog.py" line="1414"/>
         <source>Le point de passage ID_POINT </source>
         <translation>the Waypoint ID_POINT </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1589"/>
+        <location filename="../SylvaRoad_dialog.py" line="1417"/>
         <source> n&apos;est pas dans l&apos;emprise du MNT</source>
-        <translation> isn&apos;t wihin the extent of the DTM</translation>
+        <translation> isn't wihin the extent of the DTM</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1594"/>
-        <source> n&apos;est pas dans le parcellaire autorisé</source>
-        <translation> isn&apos;t within he authorized land parcel</translation>
+        <location filename="../SylvaRoad_dialog.py" line="1422"/>
+        <source> n'est pas dans le parcellaire autorisé</source>
+        <translation> isn't within he authorized land parcel</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1599"/>
+        <location filename="../SylvaRoad_dialog.py" line="1427"/>
         <source> n&apos;a pas de valeur MNT valide</source>
         <translation> has no valid DTM value</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1601"/>
+        <location filename="../SylvaRoad_dialog.py" line="1429"/>
         <source> est sur un obstacle</source>
         <translation> is on an obstacle</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1609"/>
+        <location filename="../SylvaRoad_dialog.py" line="1437"/>
         <source>Le point final n&apos;est pas dans l&apos;emprise du MNT</source>
         <translation>The ending point is not within the extent of the DTM</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1614"/>
-        <source>Le point final n&apos;est pas dans le parcellaire autorisé</source>
+        <location filename="../SylvaRoad_dialog.py" line="1442"/>
+        <source>Le point final n'est pas dans le parcellaire autorisé</source>
         <translation>The ending point is not within the authorized parcel</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1619"/>
+        <location filename="../SylvaRoad_dialog.py" line="1447"/>
         <source>Le point final n&apos;a pas de valeur MNT valide</source>
         <translation>The ending point has no valid DTM value</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1621"/>
+        <location filename="../SylvaRoad_dialog.py" line="1449"/>
         <source>Le point final est sur un obstacle</source>
         <translation>The ending point is on an obstacle</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1626"/>
+        <location filename="../SylvaRoad_dialog.py" line="1454"/>
         <source>    Tronçon n°</source>
         <translation>    Segment number</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1626"/>
-        <source> : Il faut au minimum deux points pour réaliser l&apos;analyse</source>
+        <location filename="../SylvaRoad_dialog.py" line="1454"/>
+        <source> : Il faut au minimum deux points pour réaliser l'analyse</source>
         <translation> : At least two points are required to perform the analysis</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1648"/>
+        <location filename="../SylvaRoad_dialog.py" line="1476"/>
         <source>  Verification des donnees spatiales</source>
         <translation>  Spatial data verification</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1675"/>
+        <location filename="../SylvaRoad_dialog.py" line="1503"/>
         <source>  Chargement des donnees</source>
         <translation>  Loading data</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1694"/>
+        <location filename="../SylvaRoad_dialog.py" line="1522"/>
         <source>  Initialisation du traitement</source>
         <translation>  Processing initialization</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1721"/>
+        <location filename="../SylvaRoad_dialog.py" line="1548"/>
         <source>
 
 Résultat par tronçon</source>
@@ -380,75 +380,75 @@ Résultat par tronçon</source>
 Results by segments</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1726"/>
+        <location filename="../SylvaRoad_dialog.py" line="1553"/>
         <source>  Traitement du tronçon n°</source>
         <translation>  Segment processing number</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1741"/>
+        <location filename="../SylvaRoad_dialog.py" line="1568"/>
         <source>   Tronçon n°</source>
         <translation>   Segment number</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1739"/>
+        <location filename="../SylvaRoad_dialog.py" line="1566"/>
         <source> : Des obstacles empêchent de joindre le début et la fin du tronçon</source>
         <translation> : Obstacles prevent joining the beginning and ending of the segment</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1741"/>
-        <source> : Des obstacles empêchent d&apos;atteindre le point de passage ID_POINT </source>
+        <location filename="../SylvaRoad_dialog.py" line="1568"/>
+        <source> : Des obstacles empêchent d'atteindre le point de passage ID_POINT </source>
         <translation> : Obacles prevent reaching the waypoint ID_POINT </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1771"/>
+        <location filename="../SylvaRoad_dialog.py" line="1597"/>
         <source> : Un chemin optimal a été trouvé. </source>
         <translation> : An optimal path has been found. </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1772"/>
+        <location filename="../SylvaRoad_dialog.py" line="1598"/>
         <source>
                   Longueur planimétrique : </source>
         <translation>
                   Planimeric length : </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1774"/>
+        <location filename="../SylvaRoad_dialog.py" line="1600"/>
         <source>
                   Longueur planimétrique (avec lacets corrigés) : </source>
         <translation>
                   Planimeric length ( with hairpins corrected) : </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1776"/>
+        <location filename="../SylvaRoad_dialog.py" line="1602"/>
         <source>
                   Nombre de lacets : </source>
         <translation>
                   Number of hairpins : </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1778"/>
+        <location filename="../SylvaRoad_dialog.py" line="1604"/>
         <source>Sur </source>
         <translation>On </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1778"/>
+        <location filename="../SylvaRoad_dialog.py" line="1604"/>
         <source> m, la pente en travers est supérieure à la pente en travers max.</source>
         <translation> meters, the cross slope exceeds the maximum cross slope.</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1783"/>
+        <location filename="../SylvaRoad_dialog.py" line="1609"/>
         <source> : Aucun chemin trouvé. </source>
         <translation> : No path found. </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1784"/>
+        <location filename="../SylvaRoad_dialog.py" line="1610"/>
         <source>
                   Le chemin le plus proche du but a été sauvegardé. </source>
         <translation>
                   The nearest path to the goal has been saved. </translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1790"/>
+        <location filename="../SylvaRoad_dialog.py" line="1616"/>
         <source>  Tous les tronçons ont été traités</source>
         <translation>  All segments have been processed</translation>
     </message>
@@ -458,7 +458,7 @@ Results by segments</translation>
         <translation type="obsolete">SylvaRoaD - 0.2</translation>
     </message>
     <message>
-        <location filename="../SylvaRoad_dialog.py" line="1646"/>
+        <location filename="../SylvaRoad_dialog.py" line="1474"/>
         <source>SylvaRoaD - Version </source>
         <translation>SylvaRoaD - Version </translation>
     </message>

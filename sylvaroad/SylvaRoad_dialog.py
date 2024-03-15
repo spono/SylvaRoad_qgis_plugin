@@ -22,23 +22,19 @@
  ***************************************************************************/
 """
 
-import os
+
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
-from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import QCoreApplication
 from qgis.core import QgsMessageLog, Qgis
 import numpy as np
-import os,math,gc,datetime
+import os,gc,datetime
 from osgeo import gdal,ogr,osr
 import _heapq as heapq
-from shapely import speedups
-speedups.disable()
 from shapely.geometry import LineString
 from shapely.geometry import Point
-from math import *
-from numpy import *
+from math import sqrt, floor, degrees, cos, sin, radians, acos, pi
 
 
 
@@ -185,11 +181,17 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
 
 # Fonctions qui affiche un message d'erreur dans la console
 def console_warning(message):
+    """ Description
+    :type message: char
+    """
     message = str(message)
     QgsMessageLog.logMessage(message,'SylvaRoaD',Qgis.Warning)
 
 # Fonctions qui affiche un message d'information dans la console
 def console_info(message):
+    """ Description
+    :type message: char
+    """
     message = str(message)
     QgsMessageLog.logMessage(message,'SylvaRoaD',Qgis.Info)
 
@@ -209,10 +211,10 @@ def calculate_polar(x1,y1,x2,y2):
     """
     DX = x2-x1
     DY = y2-y1
-    Deuc = math.sqrt(DX**2+DY**2)
+    Deuc = sqrt(DX**2+DY**2)
     if x2>x1:Fact=1
     else:Fact=-1
-    Angle = math.degrees(math.acos(DY/Deuc))
+    Angle = degrees(acos(DY/Deuc))
     Angle *=Fact
     az = Angle%360
     return conv_az_to_polar(az)
@@ -222,8 +224,8 @@ def build_radius(R):
     coords =np.zeros((360,3),dtype=np.float) 
     for pol in range(0,360):
         coords[pol,0]=pol
-        coords[pol,1]= R*math.cos(math.radians((pol)%360))#x
-        coords[pol,2]= R*math.sin(math.radians((pol)%360))#y
+        coords[pol,1]= R*cos(radians((pol)%360))#x
+        coords[pol,2]= R*sin(radians((pol)%360))#y
     return coords
 
 
@@ -431,7 +433,7 @@ def trace_lace(Path,R,Extent,Csize,angle_hairpin,dtm,coefplat=2):
     for i in range(1,Path.shape[0]):
         y,x = Path[i,0:2]
         y1,x1 = Path[i-1,0:2]
-        Path[i,4]=math.sqrt((x1-x)**2+(y1-y)**2)
+        Path[i,4]=sqrt((x1-x)**2+(y1-y)**2)
         if Path[i,4]!=0:
             Path[i,3]=calculate_azimut(x1,y1,x,y)  
         else:
@@ -809,7 +811,7 @@ def Path_to_lineshape(Path,Line_Shape_Path,projection,Extent,Csize,dtm,nb_lac):
         feature.SetField('LPLAN_CUM',Lcum)
         prev_L = Lcum
         dZ = dtm[yE,xE]-dtm[yS,xS]
-        L3D = math.sqrt(dZ**2+D**2)
+        L3D = sqrt(dZ**2+D**2)
         L3Dcum+=L3D
         feature.SetField('L3D_SEG',L3D)
         feature.SetField('L3D_CUM',L3Dcum)
@@ -915,7 +917,7 @@ def NewPath_to_lineshape(Path,Line_Shape_Path,projection):
         feature.SetField('Y_FIN',float(yrE))
         feature.SetField('Z_FIN',float(Path[ind+1,9]))
         dZ = Path[ind+1,9]-Path[ind,9]
-        L3D = math.sqrt(dZ**2+Path[ind+1,4]**2)
+        L3D = sqrt(dZ**2+Path[ind+1,4]**2)
         L3Dcum+=L3D   
         Lcum += Path[ind+1,4]
         feature.SetField('LPLAN_SEG',float(Path[ind+1,4]))
@@ -953,10 +955,10 @@ def calculate_azimut(x1,y1,x2,y2):
     """
     DX = x2-x1
     DY = y2-y1
-    Deuc = math.sqrt(DX**2+DY**2)
+    Deuc = sqrt(DX**2+DY**2)
     if x2>x1:Fact=1
     else:Fact=-1
-    Angle = math.degrees(math.acos(DY/Deuc))
+    Angle = degrees(acos(DY/Deuc))
     Angle *=Fact
     return Angle%360
 
@@ -1026,8 +1028,8 @@ def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
     test=1    
     max_slope_change = 2.*max(min_slope,max_slope) 
     max_slope_hairpin= max_slope*0.5+2 #From observation on previous simulation
-    max_hairpin_angle = 180-max_slope_hairpin*0.01/tal*180*(1+1/(2*math.pi)) #Distance on the slope between roads
-    max_hairpin_angle -= lpla*360/(2*math.pi*2*Radius)#Additional Distance corresponding to platform width 
+    max_hairpin_angle = 180-max_slope_hairpin*0.01/tal*180*(1+1/(2*pi)) #Distance on the slope between roads
+    max_hairpin_angle -= lpla*360/(2*pi*2*Radius)#Additional Distance corresponding to platform width 
     Obs2 = np.int8(Perc_Slope>trans_slope_all)
     nbpix = Tab_corresp.shape[0]    
     Best = np.zeros((nbpix,11),dtype=np.float32) 
@@ -1525,7 +1527,7 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
         min_slope *= 1. 
         max_slope *= 1. 
         penalty_xy *= 1.
-        #penalty_xy = Radius*(2*math.pi+1)   
+        #penalty_xy = Radius*(2*pi+1)   
         #penalty_xy =0
         penalty_z *= 1. 
         D_neighborhood *= 1. 
