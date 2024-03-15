@@ -2223,14 +2223,6 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Resu
 #############################################################
 
 
-def mini(a, b):
-    return a if a <= b else b
-
-
-def maxi(a, b):
-    return a if a >= b else b
-
-
 def calculate_azimut(x1, y1, x2, y2):
     DX = x2 - x1
     DY = y2 - y1
@@ -2298,13 +2290,13 @@ def get_intersect(a1y, a1x, a2y, a2x, b1y, b1x, b2y, b2x):
         inter = 0
     if z != 0:
         xi, yi = x / z, y / z
-        if xi < maxi(mini(a1x, a2x), mini(b1x, b2x)):
+        if xi < max(min(a1x, a2x), min(b1x, b2x)):
             inter = 0
-        elif xi > mini(maxi(a1x, a2x), maxi(b1x, b2x)):
+        elif xi > min(max(a1x, a2x), max(b1x, b2x)):
             inter = 0
-        if yi < maxi(mini(a1y, a2y), mini(b1y, b2y)):
+        if yi < max(min(a1y, a2y), min(b1y, b2y)):
             inter = 0
-        elif yi > mini(maxi(a1y, a2y), maxi(b1y, b2y)):
+        elif yi > min(max(a1y, a2y), max(b1y, b2y)):
             inter = 0
     return inter
 
@@ -2363,12 +2355,12 @@ def check_profile(yc, xc, y, x, slope_perc, dtm, Csize, max_diff_z, Obs, Obs2, L
             sumobs2 += Obs2[ys[i], xs[i]]
         z = dtm[ys[i], xs[i]]
         zline = slope_perc / 100. * Dhor + zo
-        diffz = maxi(diffz, abs(zline - z))
+        diffz = max(diffz, abs(zline - z))
         if diffz > max_diff_z:
             test = 0
             break
     if test:
-        newLsl += mini(sumobs2 * Csize, Dhor)
+        newLsl += min(sumobs2 * Csize, Dhor)
         if newLsl > Lmax_ab_sl:
             test = 0
     return test, newLsl
