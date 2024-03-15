@@ -202,11 +202,37 @@ def console_info(message):
 ###############################################################################
 
 def conv_az_to_polar(az):
+    
+    """ Description
+    :type az:
+    :param az:
+
+    :raises:
+
+    :rtype:
+    """
     return (360-(az-90))%360
 
 
 def calculate_polar(x1,y1,x2,y2):
-    """
+    
+    """ Description
+    :type x1:
+    :param x1:
+
+    :type y1:
+    :param y1:
+
+    :type x2:
+    :param x2:
+
+    :type y2:
+    :param y2:
+
+    :raises:
+
+    :rtype:
+
     Calculate the azimuth between two points from their coordinates
     """
     DX = x2-x1
@@ -221,6 +247,15 @@ def calculate_polar(x1,y1,x2,y2):
 
 
 def build_radius(R):
+    
+    """ Description
+    :type R:
+    :param R:
+
+    :raises:
+
+    :rtype:
+    """
     coords =np.zeros((360,3),dtype=np.float) 
     for pol in range(0,360):
         coords[pol,0]=pol
@@ -230,6 +265,18 @@ def build_radius(R):
 
 
 def diff(az_to,az_from):   
+    
+    """ Description
+    :type az_to:
+    :param az_to:
+
+    :type az_from:
+    :param az_from:
+
+    :raises:
+
+    :rtype:
+    """
     if az_to>az_from:
         return min((360-(az_to-az_from),(az_to-az_from)))
     else:
@@ -237,6 +284,18 @@ def diff(az_to,az_from):
 
 
 def get_id_lacets(Path,angle_hairpin):
+    
+    """ Description
+    :type Path:
+    :param Path:
+
+    :type angle_hairpin:
+    :param angle_hairpin:
+
+    :raises:
+
+    :rtype:
+    """
     id_lacet_classique = []    
     for i,pt in enumerate(Path[1:-1]):
         az1 = pt[3]
@@ -297,6 +356,32 @@ def get_id_lacets(Path,angle_hairpin):
 
 def trace_lace(Path,R,Extent,Csize,angle_hairpin,dtm,coefplat=2):   
     
+    """ Description
+    :type Path:
+    :param Path:
+
+    :type R:
+    :param R:
+
+    :type Extent:
+    :param Extent:
+
+    :type Csize:
+    :param Csize:
+
+    :type angle_hairpin:
+    :param angle_hairpin:
+
+    :type dtm:
+    :param dtm:
+
+    :type coefplat:
+    :param coefplat:
+
+    :raises:
+
+    :rtype:
+    """
     lacets = get_id_lacets(Path,angle_hairpin)
     
     coords = build_radius(R)
@@ -444,6 +529,18 @@ def trace_lace(Path,R,Extent,Csize,angle_hairpin,dtm,coefplat=2):
   
 
 def check_field(filename,fieldname):    
+
+    """ Description
+    :type filename:
+    :param filename:
+
+    :type fieldname:
+    :param fieldname:
+
+    :raises:
+
+    :rtype:
+    """
     test=0
     source_ds = ogr.Open(filename)
     layer = source_ds.GetLayer()    
@@ -467,6 +564,15 @@ def check_field(filename,fieldname):
 
 
 def raster_get_info(in_file_name):
+    
+    """ Description
+    :type in_file_name:
+    :param in_file_name:
+
+    :raises:
+
+    :rtype:
+    """
     source_ds = gdal.Open(in_file_name)    
     src_proj = osr.SpatialReference(wkt=source_ds.GetProjection())
     src_ncols = source_ds.RasterXSize
@@ -482,6 +588,21 @@ def raster_get_info(in_file_name):
 
 #Chech all spatial entries before processing
 def check_files(Dtm_file,Waypoints_file,Property_file):
+    
+    """ Description
+    :type Dtm_file:
+    :param Dtm_file:
+
+    :type Waypoints_file:
+    :param Waypoints_file:
+
+    :type Property_file:
+    :param Property_file:
+
+    :raises:
+
+    :rtype:
+    """
     test = 1
     Csize = None
     mess=QCoreApplication.translate("MainWindow","\nLES PROBLEMES SUIVANTS ONT ETE IDENTIFIES CONCERNANT LES ENTREES SPATIALES: \n")
@@ -544,6 +665,15 @@ def check_files(Dtm_file,Waypoints_file,Property_file):
 
 
 def load_float_raster(raster_file):
+    
+    """ Description
+    :type raster_file:
+    :param raster_file:
+
+    :raises:
+
+    :rtype:
+    """
     dataset = gdal.Open(raster_file,gdal.GA_ReadOnly)
     cols = dataset.RasterXSize
     rows = dataset.RasterYSize    
@@ -624,7 +754,27 @@ def shapefile_to_np_array(file_name,Extent,Csize,attribute_name,order_field=None
   
 
 def prepa_obstacle(Obstacles_directory,Extent,Csize,ncols,nrow):
-    """
+    
+    """ Description
+    :type Obstacles_directory:
+    :param Obstacles_directory:
+
+    :type Extent:
+    :param Extent:
+
+    :type Csize:
+    :param Csize:
+
+    :type ncols:
+    :param ncols:
+
+    :type nrow:
+    :param nrow:
+
+    :raises:
+
+    :rtype:
+
     Create raster with where there are obstacles, 0 anywhere else   
     """
     liste_file = os.listdir(Obstacles_directory)
@@ -710,6 +860,15 @@ def shapefile_obs_to_np_array(file_list,Extent,Csize):
 
 
 def get_proj_from_road_network(road_network_file):
+    
+    """ Description
+    :type road_network_file:
+    :param road_network_file:
+
+    :raises:
+
+    :rtype:
+    """
     source_ds = ogr.Open(road_network_file)
     source_layer = source_ds.GetLayer()    
     source_srs = source_layer.GetSpatialRef()
@@ -938,6 +1097,24 @@ def NewPath_to_lineshape(Path,Line_Shape_Path,projection):
 
    
 def reconstruct_path(goal, start, Best,Tab_corresp):    
+    
+    """ Description
+    :type goal:
+    :param goal:
+
+    :type start:
+    :param start:
+
+    :type Best:
+    :param Best:
+
+    :type Tab_corresp:
+    :param Tab_corresp:
+
+    :raises:
+
+    :rtype:
+    """
     current = goal
     path = []
     while current != start:
@@ -950,7 +1127,24 @@ def reconstruct_path(goal, start, Best,Tab_corresp):
 
 
 def calculate_azimut(x1,y1,x2,y2):
-    """
+   
+    """ Description
+    :type x1:
+    :param x1:
+   
+    :type y1:
+    :param y1:
+   
+    :type x2:
+    :param x2:
+   
+    :type y2:
+    :param y2:
+   
+    :raises:
+   
+    :rtype:
+
     Calculate the azimuth between two points from their coordinates
     """
     DX = x2-x1
@@ -992,6 +1186,30 @@ class PriorityQueue2:
 
 
 def build_NeibTable(D_neighborhood,Csize,dtm,Obs,min_slope,max_slope):
+    
+    """ Description
+    :type D_neighborhood:
+    :param D_neighborhood:
+
+    :type Csize:
+    :param Csize:
+
+    :type dtm:
+    :param dtm:
+
+    :type Obs:
+    :param Obs:
+
+    :type min_slope:
+    :param min_slope:
+
+    :type max_slope:
+    :param max_slope:
+
+    :raises:
+
+    :rtype:
+    """
     nbpix_neighborhood=int(D_neighborhood/Csize+0.5)
     x, y = np.meshgrid(np.arange(-nbpix_neighborhood, nbpix_neighborhood+1, dtype=int), 
                       np.arange(-nbpix_neighborhood, nbpix_neighborhood+1, dtype=int))
@@ -1018,11 +1236,98 @@ def build_NeibTable(D_neighborhood,Csize,dtm,Obs,min_slope,max_slope):
     
 
 def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
-                 min_slope,max_slope,penalty_xy,penalty_z,Dist_to_End,
-                 Local_Slope,Perc_Slope,Csize,dtm,max_diff_z,
-                 trans_slope_all,newObs,angle_hairpin,Lmax_ab_sl,Radius,
-                 D_neighborhood,prop_sl_max=0.25,tal=1.5,lpla=4):
+                min_slope,max_slope,penalty_xy,penalty_z,Dist_to_End,
+                Local_Slope,Perc_Slope,Csize,dtm,max_diff_z,
+                trans_slope_all,newObs,angle_hairpin,Lmax_ab_sl,Radius,
+                D_neighborhood,prop_sl_max=0.25,tal=1.5,lpla=4):
     
+    """ Description
+    :type segments:
+    :param segments:
+
+    :type Slope:
+    :param Slope:
+
+    :type IdVois:
+    :param IdVois:
+
+    :type Id:
+    :param Id:
+
+    :type Tab_corresp:
+    :param Tab_corresp:
+
+    :type IdPix:
+    :param IdPix:
+
+    :type Az:
+    :param Az:
+
+    :type Dist:
+    :param Dist:
+
+    :type min_slope:
+    :param min_slope:
+
+    :type max_slope:
+    :param max_slope:
+
+    :type penalty_xy:
+    :param penalty_xy:
+
+    :type penalty_z:
+    :param penalty_z:
+
+    :type Dist_to_End:
+    :param Dist_to_End:
+
+    :type Local_Slope:
+    :param Local_Slope:
+
+    :type Perc_Slope:
+    :param Perc_Slope:
+
+    :type Csize:
+    :param Csize:
+
+    :type dtm:
+    :param dtm:
+
+    :type max_diff_z:
+    :param max_diff_z:
+
+    :type trans_slope_all:
+    :param trans_slope_all:
+
+    :type newObs:
+    :param newObs:
+
+    :type angle_hairpin:
+    :param angle_hairpin:
+
+    :type Lmax_ab_sl:
+    :param Lmax_ab_sl:
+
+    :type Radius:
+    :param Radius:
+
+    :type D_neighborhood:
+    :param D_neighborhood:
+
+    :type prop_sl_max:
+    :param prop_sl_max:
+
+    :type tal:
+    :param tal:
+
+    :type lpla:
+    :param lpla:
+
+    :raises:
+
+    :rtype:
+    """ 
+
     #1. Create neighborhood matrix with azimut and distance 
     nbpart = len(segments)
     test=1    
@@ -1186,19 +1491,67 @@ def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
 
 
 def get_xy0(Extent,Csize):   
+    
+    """ Description
+    :type Extent:
+    :param Extent:
+
+    :type Csize:
+    :param Csize:
+
+    :raises:
+
+    :rtype:
+    """
     return Extent[0]+0.5*Csize,Extent[3]-0.5*Csize
 
 
 def get_Slope(Dtm_file):
+    
+    """ Description
+    :type Dtm_file:
+    :param Dtm_file:
+
+    :raises:
+
+    :rtype:
+    """
     a=gdal.DEMProcessing('slope', Dtm_file, 'slope',slopeFormat="percent",computeEdges=True,format='MEM')
     return a.GetRasterBand(1).ReadAsArray()
 
 
-def create_res_dir(Result_Dir,
-                   trans_slope_all,trans_slope_hairpin,
-                   min_slope,max_slope,
-                   penalty_xy,penalty_z,
-                   D_neighborhood):
+def create_res_dir(Result_Dir,trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,penalty_z,D_neighborhood):
+    
+    
+    """ Description
+    :type Result_Dir:
+    :param Result_Dir:
+
+    :type trans_slope_all:
+    :param trans_slope_all:
+
+    :type trans_slope_hairpin:
+    :param trans_slope_hairpin:
+
+    :type min_slope:
+    :param min_slope:
+
+    :type max_slope:
+    :param max_slope:
+
+    :type penalty_xy:
+    :param penalty_xy:
+
+    :type penalty_z:
+    :param penalty_z:
+
+    :type D_neighborhood:
+    :param D_neighborhood:
+
+    :raises:
+
+    :rtype:
+    """
     dirs = [d for d in os.listdir(Result_Dir) if os.path.isdir(os.path.join(Result_Dir, d))]
     list_dir = []
     for dire in dirs:
@@ -1216,6 +1569,15 @@ def create_res_dir(Result_Dir,
 
 
 def heures(Hdebut):
+    
+    """ Description
+    :type Hdebut:
+    :param Hdebut:
+
+    :raises:
+
+    :rtype:
+    """
     Hfin = datetime.datetime.now()
     duree = Hfin - Hdebut
     str_duree = str(duree).split('.')[0]
@@ -1226,13 +1588,64 @@ def heures(Hdebut):
     return str_duree, str_fin, str_debut
 
 
-def get_param(trans_slope_all,trans_slope_hairpin,
-              min_slope,max_slope,
-              penalty_xy,penalty_z,
-              D_neighborhood,max_diff_z,angle_hairpin,
-              Dtm_file,Obs_Dir,Waypoints_file,
-              Property_file,Csize,Lmax_ab_sl,Radius):
+def get_param(trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,
+              penalty_z,D_neighborhood,max_diff_z,angle_hairpin,Dtm_file,Obs_Dir,
+              Waypoints_file,Property_file,Csize,Lmax_ab_sl,Radius):
     
+    
+    """ Description
+    :type trans_slope_all:
+    :param trans_slope_all:
+
+    :type trans_slope_hairpin:
+    :param trans_slope_hairpin:
+
+    :type min_slope:
+    :param min_slope:
+
+    :type max_slope:
+    :param max_slope:
+
+    :type penalty_xy:
+    :param penalty_xy:
+
+    :type penalty_z:
+    :param penalty_z:
+
+    :type D_neighborhood:
+    :param D_neighborhood:
+
+    :type max_diff_z:
+    :param max_diff_z:
+
+    :type angle_hairpin:
+    :param angle_hairpin:
+
+    :type Dtm_file:
+    :param Dtm_file:
+
+    :type Obs_Dir:
+    :param Obs_Dir:
+
+    :type Waypoints_file:
+    :param Waypoints_file:
+
+    :type Property_file:
+    :param Property_file:
+
+    :type Csize:
+    :param Csize:
+
+    :type Lmax_ab_sl:
+    :param Lmax_ab_sl:
+
+    :type Radius:
+    :param Radius:
+
+    :raises:
+
+    :rtype:
+    """
     txt = QCoreApplication.translate("MainWindow","FICHIERS UTILISES POUR LA MODELISATION:") + "\n\n"
     txt += QCoreApplication.translate("MainWindow","   - MNT :                   ") + Dtm_file+"\n"
     txt += QCoreApplication.translate("MainWindow","     Résolution (m) :        ")+str(Csize)+" m\n"
@@ -1256,6 +1669,30 @@ def get_param(trans_slope_all,trans_slope_hairpin,
 
 
 def create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut):
+    
+    """ Description
+    :type Rspace:
+    :param Rspace:
+
+    :type param:
+    :param param:
+
+    :type res_process:
+    :param res_process:
+
+    :type str_duree:
+    :param str_duree:
+
+    :type str_fin:
+    :param str_fin:
+
+    :type str_debut:
+    :param str_debut:
+
+    :raises:
+
+    :rtype:
+    """
     filename = Rspace +"Parametre_simulation.txt"    
     txt = QCoreApplication.translate("MainWindow","SylvaRoaD")+"\n\n"
     ver =  "0.2"
@@ -1275,6 +1712,18 @@ def create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut):
 
 
 def get_points_from_waypoints(Waypoints_file,Dtm_file):
+    
+    """ Description
+    :type Waypoints_file:
+    :param Waypoints_file:
+
+    :type Dtm_file:
+    :param Dtm_file:
+
+    :raises:
+
+    :rtype:
+    """
     #Open Dtm_file
     src_ds=gdal.Open(Dtm_file) 
     gt=src_ds.GetGeoTransform()
@@ -1307,6 +1756,18 @@ def get_points_from_waypoints(Waypoints_file,Dtm_file):
     
 
 def get_waypoints(id_tron,pt_list): 
+    
+    """ Description
+    :type id_tron:
+    :param id_tron:
+
+    :type pt_list:
+    :param pt_list:
+
+    :raises:
+
+    :rtype:
+    """
     seg_list = []
     ptlist2 = pt_list[pt_list[:,0]==id_tron]
     nbpt = ptlist2.shape[0]
@@ -1318,11 +1779,69 @@ def get_waypoints(id_tron,pt_list):
     return seg_list
     
 
-def save_param_file(Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,
-                    Result_Dir,trans_slope_all,trans_slope_hairpin,
-                    min_slope,max_slope,penalty_xy,penalty_z,
-                    D_neighborhood,max_diff_z,angle_hairpin,Lmax_ab_sl,
-                    Rspace,Radius):
+def save_param_file(Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,
+                    trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,
+                    penalty_z,D_neighborhood,max_diff_z,angle_hairpin,Lmax_ab_sl,Rspace,Radius):
+    
+    """ Description
+    :type Wspace:
+    :param Wspace:
+
+    :type Dtm_file:
+    :param Dtm_file:
+
+    :type Obs_Dir:
+    :param Obs_Dir:
+
+    :type Waypoints_file:
+    :param Waypoints_file:
+
+    :type Property_file:
+    :param Property_file:
+
+    :type Result_Dir:
+    :param Result_Dir:
+
+    :type trans_slope_all:
+    :param trans_slope_all:
+
+    :type trans_slope_hairpin:
+    :param trans_slope_hairpin:
+
+    :type min_slope:
+    :param min_slope:
+
+    :type max_slope:
+    :param max_slope:
+
+    :type penalty_xy:
+    :param penalty_xy:
+
+    :type penalty_z:
+    :param penalty_z:
+
+    :type D_neighborhood:
+    :param D_neighborhood:
+
+    :type max_diff_z:
+    :param max_diff_z:
+
+    :type angle_hairpin:
+    :param angle_hairpin:
+
+    :type Lmax_ab_sl:
+    :param Lmax_ab_sl:
+
+    :type Rspace:
+    :param Rspace:
+
+    :type Radius:
+    :param Radius:
+
+    :raises:
+
+    :rtype:
+    """
     param = []
     param.append([Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,
                     Result_Dir,trans_slope_all,trans_slope_hairpin,
@@ -1381,6 +1900,27 @@ def ArrayToGtiff(Array,file_name,Extent,nrows,ncols,road_network_proj,nodata_val
 
 
 def test_point_within(segments,dtm,Obs,id_tron,res_process):    
+    
+    """ Description
+    :type segments:
+    :param segments:
+
+    :type dtm:
+    :param dtm:
+
+    :type Obs:
+    :param Obs:
+
+    :type id_tron:
+    :param id_tron:
+
+    :type res_process:
+    :param res_process:
+
+    :raises:
+
+    :rtype:
+    """
     nrows,ncols = Obs.shape
     #Check final point
     txt=""
@@ -1464,11 +2004,68 @@ def test_point_within(segments,dtm,Obs,id_tron,res_process):
     return test, res_process,end
       
     
-def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
-                              Result_Dir,trans_slope_all,trans_slope_hairpin,
-                              min_slope,max_slope,penalty_xy,penalty_z,
-                              D_neighborhood,max_diff_z,angle_hairpin,
+def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,
+                              trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
+                              penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
                               Lmax_ab_sl,Wspace,Radius):
+
+    
+    """ Description
+    :type Dtm_file:
+    :param Dtm_file:
+
+    :type Obs_Dir:
+    :param Obs_Dir:
+
+    :type Waypoints_file:
+    :param Waypoints_file:
+
+    :type Property_file:
+    :param Property_file:
+
+    :type Result_Dir:
+    :param Result_Dir:
+
+    :type trans_slope_all:
+    :param trans_slope_all:
+
+    :type trans_slope_hairpin:
+    :param trans_slope_hairpin:
+
+    :type min_slope:
+    :param min_slope:
+
+    :type max_slope:
+    :param max_slope:
+
+    :type penalty_xy:
+    :param penalty_xy:
+
+    :type penalty_z:
+    :param penalty_z:
+
+    :type D_neighborhood:
+    :param D_neighborhood:
+
+    :type max_diff_z:
+    :param max_diff_z:
+
+    :type angle_hairpin:
+    :param angle_hairpin:
+
+    :type Lmax_ab_sl:
+    :param Lmax_ab_sl:
+
+    :type Wspace:
+    :param Wspace:
+
+    :type Radius:
+    :param Radius:
+
+    :raises:
+
+    :rtype:
+    """
     ver = "0.2"
     txt = ""
     console_info(QCoreApplication.translate("MainWindow","SylvaRoaD - Version ")+ver)
