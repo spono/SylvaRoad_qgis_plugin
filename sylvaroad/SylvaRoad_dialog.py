@@ -73,6 +73,7 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self.button_box.accepted.connect(self.launch)
         self.button_box.rejected.connect(self.abort)
+        
 
 
     def open_folder(self, button_number):
@@ -181,16 +182,40 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
 
 # Fonctions qui affiche un message d'erreur dans la console
 def console_warning(message):
-    """ Description
-    :type message: char
+
+    """ 
+    Log a warning message to the console.
+
+    This function logs a warning message to the QGIS console using the specified message.
+
+    Args:
+    - message (str): The warning message to be logged.
+
+    Raises:
+    - None
+
+    Returns:
+    - None
     """
     message = str(message)
     QgsMessageLog.logMessage(message,'SylvaRoaD',Qgis.Warning)
 
 # Fonctions qui affiche un message d'information dans la console
 def console_info(message):
-    """ Description
-    :type message: char
+
+    """ 
+    Log an informational message to the console.
+
+    This function logs an informational message to the QGIS console using the specified message.
+
+    Args:
+    - message (str): The informational message to be logged.
+
+    Raises:
+    - None
+
+    Returns:
+    - None
     """
     message = str(message)
     QgsMessageLog.logMessage(message,'SylvaRoaD',Qgis.Info)
@@ -203,37 +228,40 @@ def console_info(message):
 
 def conv_az_to_polar(az):
     
-    """ Description
-    :type az:
-    :param az:
+    """Converts azimuth angle to polar angle.
 
-    :raises:
+    Azimuth angle represents the angle measured clockwise from the north direction
+    in the range [0, 360) degrees. Polar angle is measured counterclockwise from
+    the positive x-axis in the range [0, 360) degrees.
 
-    :rtype:
+    :param az: Azimuth angle in degrees.
+    :type az: float
+
+    :return: Polar angle corresponding to the given azimuth angle.
+    :rtype: float
+
+    :raises: None
     """
     return (360-(az-90))%360
 
 
 def calculate_polar(x1,y1,x2,y2):
     
-    """ Description
-    :type x1:
-    :param x1:
+    """Calculates the azimuth between two points from their coordinates.
 
-    :type y1:
-    :param y1:
+    :param x1: x-coordinate of the first point.
+    :type x1: float
+    :param y1: y-coordinate of the first point.
+    :type y1: float
+    :param x2: x-coordinate of the second point.
+    :type x2: float
+    :param y2: y-coordinate of the second point.
+    :type y2: float
 
-    :type x2:
-    :param x2:
+    :return: Azimuth angle between the two points in degrees.
+    :rtype: float
 
-    :type y2:
-    :param y2:
-
-    :raises:
-
-    :rtype:
-
-    Calculate the azimuth between two points from their coordinates
+    :raises: None
     """
     DX = x2-x1
     DY = y2-y1
@@ -248,13 +276,15 @@ def calculate_polar(x1,y1,x2,y2):
 
 def build_radius(R):
     
-    """ Description
-    :type R:
-    :param R:
+    """Builds coordinates around a circle with radius R.
 
-    :raises:
+    :param R: Radius of the circle.
+    :type R: float
 
-    :rtype:
+    :return: Array of coordinates around the circle, where each row represents a point.
+    :rtype: numpy.ndarray
+
+    :raises: None
     """
     coords =np.zeros((360,3),dtype=np.float) 
     for pol in range(0,360):
@@ -266,16 +296,17 @@ def build_radius(R):
 
 def diff(az_to,az_from):   
     
-    """ Description
-    :type az_to:
-    :param az_to:
+    """Calculates the shortest difference between two azimuth angles.
 
-    :type az_from:
-    :param az_from:
+    :param az_to: Destination azimuth angle.
+    :type az_to: float
+    :param az_from: Origin azimuth angle.
+    :type az_from: float
 
-    :raises:
+    :return: Shortest difference between the two azimuth angles in degrees.
+    :rtype: float
 
-    :rtype:
+    :raises: None
     """
     if az_to>az_from:
         return min((360-(az_to-az_from),(az_to-az_from)))
@@ -285,16 +316,17 @@ def diff(az_to,az_from):
 
 def get_id_lacets(Path,angle_hairpin):
     
-    """ Description
-    :type Path:
-    :param Path:
+    """Identifies and categorizes loops (lacets) in a path based on azimuth angles.
 
-    :type angle_hairpin:
-    :param angle_hairpin:
+    :param Path: Array containing path data.
+    :type Path: numpy.ndarray
+    :param angle_hairpin: Threshold angle for considering a loop as a hairpin.
+    :type angle_hairpin: float
 
-    :raises:
+    :return: Array containing IDs and types of identified loops.
+    :rtype: numpy.ndarray
 
-    :rtype:
+    :raises: None
     """
     id_lacet_classique = []    
     for i,pt in enumerate(Path[1:-1]):
@@ -356,31 +388,33 @@ def get_id_lacets(Path,angle_hairpin):
 
 def trace_lace(Path,R,Extent,Csize,angle_hairpin,dtm,coefplat=2):   
     
-    """ Description
-    :type Path:
-    :param Path:
+    """Traces loops (lacets) along a path based on azimuth angles and surface characteristics.
 
-    :type R:
-    :param R:
+    :param Path: Array containing path data.
+    :type Path: numpy.ndarray
 
-    :type Extent:
-    :param Extent:
+    :param R: Radius of the loop.
+    :type R: float
 
-    :type Csize:
-    :param Csize:
+    :param Extent: Extent of the area.
+    :type Extent: tuple
 
-    :type angle_hairpin:
-    :param angle_hairpin:
+    :param Csize: Cell size.
+    :type Csize: float
 
-    :type dtm:
-    :param dtm:
+    :param angle_hairpin: Threshold angle for considering a loop as a hairpin.
+    :type angle_hairpin: float
 
-    :type coefplat:
-    :param coefplat:
+    :param dtm: Digital Terrain Model (DTM) data.
+    :type dtm: numpy.ndarray
 
-    :raises:
+    :param coefplat: Coefficient for adjusting the loop's surface characteristics, defaults to 2.
+    :type coefplat: int, optional
 
-    :rtype:
+    :return: Array containing traced path data with added loop details.
+    :rtype: numpy.ndarray
+
+    :raises: None
     """
     lacets = get_id_lacets(Path,angle_hairpin)
     
@@ -530,16 +564,18 @@ def trace_lace(Path,R,Extent,Csize,angle_hairpin,dtm,coefplat=2):
 
 def check_field(filename,fieldname):    
 
-    """ Description
-    :type filename:
-    :param filename:
+    """Checks if a specific field exists in the attribute table of a vector dataset.
 
-    :type fieldname:
-    :param fieldname:
+    :param filename: Path to the vector dataset.
+    :type filename: str
+    :param fieldname: Name of the field to check.
+    :type fieldname: str
 
-    :raises:
+    :return: 0 if the field does not exist, 1 if the field exists and has consistent values across all features, 
+             2 if the field exists but has missing values in some features.
+    :rtype: int
 
-    :rtype:
+    :raises: None
     """
     test=0
     source_ds = ogr.Open(filename)
@@ -565,13 +601,17 @@ def check_field(filename,fieldname):
 
 def raster_get_info(in_file_name):
     
-    """ Description
-    :type in_file_name:
-    :param in_file_name:
+    """Retrieves information about a raster dataset.
 
-    :raises:
+    :param in_file_name: Path to the input raster file.
+    :type in_file_name: str
 
-    :rtype:
+    :return: Names and corresponding values of important raster parameters,
+             spatial reference of the raster dataset,
+             and extent of the raster dataset.
+    :rtype: tuple
+
+    :raises: None
     """
     source_ds = gdal.Open(in_file_name)    
     src_proj = osr.SpatialReference(wkt=source_ds.GetProjection())
@@ -589,19 +629,24 @@ def raster_get_info(in_file_name):
 #Chech all spatial entries before processing
 def check_files(Dtm_file,Waypoints_file,Property_file):
     
-    """ Description
-    :type Dtm_file:
-    :param Dtm_file:
+    """Checks the validity of input spatial files.
 
-    :type Waypoints_file:
-    :param Waypoints_file:
+    :param Dtm_file: Path to the Digital Terrain Model (DTM) raster file.
+    :type Dtm_file: str
 
-    :type Property_file:
-    :param Property_file:
+    :param Waypoints_file: Path to the waypoints spatial file.
+    :type Waypoints_file: str
+    
+    :param Property_file: Path to the property spatial file.
+    :type Property_file: str
 
-    :raises:
+    :return: Tuple containing:
+             - Status of file checks (1 if all checks pass, 0 otherwise),
+             - Message detailing any identified problems with the input files,
+             - Cell size of the DTM raster file.
+    :rtype: tuple
 
-    :rtype:
+    :raises: None
     """
     test = 1
     Csize = None
@@ -665,14 +710,20 @@ def check_files(Dtm_file,Waypoints_file,Property_file):
 
 
 def load_float_raster(raster_file):
-    
-    """ Description
-    :type raster_file:
-    :param raster_file:
 
-    :raises:
+    """Loads a floating-point raster dataset.
 
-    :rtype:
+    :param raster_file: Path to the raster file.
+    :type raster_file: str
+
+    :return: Tuple containing:
+             - Array: 2D NumPy array representing the raster values,
+             - Extent: Extent of the raster dataset [xmin, xmax, ymin, ymax],
+             - Csize: Cell size of the raster dataset,
+             - proj: Projection information of the raster dataset.
+    :rtype: tuple
+
+    :raises: None
     """
     dataset = gdal.Open(raster_file,gdal.GA_ReadOnly)
     cols = dataset.RasterXSize
@@ -755,27 +806,23 @@ def shapefile_to_np_array(file_name,Extent,Csize,attribute_name,order_field=None
 
 def prepa_obstacle(Obstacles_directory,Extent,Csize,ncols,nrow):
     
-    """ Description
-    :type Obstacles_directory:
-    :param Obstacles_directory:
+    """Prepares obstacle raster data.
 
-    :type Extent:
-    :param Extent:
+    :param Obstacles_directory: Directory containing obstacle shapefiles.
+    :type Obstacles_directory: str
+    :param Extent: Extent of the raster dataset [xmin, xmax, ymin, ymax].
+    :type Extent: list
+    :param Csize: Cell size of the raster dataset.
+    :type Csize: float
+    :param ncols: Number of columns in the raster dataset.
+    :type ncols: int
+    :param nrows: Number of rows in the raster dataset.
+    :type nrows: int
 
-    :type Csize:
-    :param Csize:
+    :return: Raster representing the location of obstacles (0 where there are no obstacles).
+    :rtype: numpy.ndarray
 
-    :type ncols:
-    :param ncols:
-
-    :type nrow:
-    :param nrow:
-
-    :raises:
-
-    :rtype:
-
-    Create raster with where there are obstacles, 0 anywhere else   
+    :raises: None
     """
     liste_file = os.listdir(Obstacles_directory)
     liste_obs = []
@@ -861,13 +908,20 @@ def shapefile_obs_to_np_array(file_list,Extent,Csize):
 
 def get_proj_from_road_network(road_network_file):
     
-    """ Description
-    :type road_network_file:
-    :param road_network_file:
+    """Extracts the projection information from a road network file.
 
-    :raises:
+    This function opens the provided road network file and retrieves the spatial reference
+    information from its layer. It then returns the Well-Known Text (WKT) representation 
+    of the spatial reference and the SpatialReference object.
 
-    :rtype:
+    :param road_network_file: Path to the road network file.
+    :type road_network_file: str
+
+    :return: A tuple containing the Well-Known Text (WKT) representation of the spatial reference
+             and the SpatialReference object.
+    :rtype: tuple
+
+    :raises: None
     """
     source_ds = ogr.Open(road_network_file)
     source_layer = source_ds.GetLayer()    
@@ -1098,22 +1152,28 @@ def NewPath_to_lineshape(Path,Line_Shape_Path,projection):
    
 def reconstruct_path(goal, start, Best,Tab_corresp):    
     
-    """ Description
-    :type goal:
-    :param goal:
+    """Reconstructs the path from the goal node to the start node.
 
-    :type start:
-    :param start:
+    This function takes the goal node, start node, a matrix containing information
+    about the best path, and a matrix containing correspondence between nodes 
+    and coordinates, and reconstructs the path from the goal node to the start node.
 
-    :type Best:
-    :param Best:
+    :param goal: The goal node representing the end of the path.
+    :type goal: int
 
-    :type Tab_corresp:
-    :param Tab_corresp:
+    :param start: The start node representing the beginning of the path.
+    :type start: int
 
-    :raises:
+    :param Best: A matrix containing information about the best path.
+    :type Best: numpy.ndarray
+    :param Tab_corresp: A matrix containing correspondence between nodes and coordinates.
+    :type Tab_corresp: numpy.ndarray
 
-    :rtype:
+    :return: An array representing the reconstructed path, including coordinates,
+             azimuth, slope, distance, and additional information.
+    :rtype: numpy.ndarray
+
+    :raises: None
     """
     current = goal
     path = []
@@ -1128,24 +1188,26 @@ def reconstruct_path(goal, start, Best,Tab_corresp):
 
 def calculate_azimut(x1,y1,x2,y2):
    
-    """ Description
-    :type x1:
-    :param x1:
-   
-    :type y1:
-    :param y1:
-   
-    :type x2:
-    :param x2:
-   
-    :type y2:
-    :param y2:
-   
-    :raises:
-   
-    :rtype:
+    """Calculates the azimuth between two points from their coordinates.
 
-    Calculate the azimuth between two points from their coordinates
+    This function calculates the azimuth (bearing) between two points represented
+    by their coordinates (x1, y1) and (x2, y2).
+
+    :param x1: The x-coordinate of the first point.
+    :type x1: float
+
+    :param y1: The y-coordinate of the first point.
+    :type y1: float
+    :param x2: The x-coordinate of the second point.
+    
+    44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444:type x2: float
+    :param y2: The y-coordinate of the second point.
+    :type y2: float
+
+    :return: The azimuth between the two points in degrees, ranging from 0 to 360.
+    :rtype: float
+
+    :raises: None
     """
     DX = x2-x1
     DY = y2-y1
@@ -1241,92 +1303,43 @@ def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
                 trans_slope_all,newObs,angle_hairpin,Lmax_ab_sl,Radius,
                 D_neighborhood,prop_sl_max=0.25,tal=1.5,lpla=4):
     
-    """ Description
-    :type segments:
-    :param segments:
+    """Builds a neighborhood table based on specified parameters and input data.
 
-    :type Slope:
-    :param Slope:
+    This function constructs a neighborhood table for each pixel in the provided digital
+    terrain model (DTM). The neighborhood is defined within a specified distance neighborhood
+    radius (D_neighborhood) around each pixel. Neighboring pixels are included if they meet
+    certain criteria, such as being within the specified slope range (min_slope to max_slope).
 
-    :type IdVois:
-    :param IdVois:
+    :param D_neighborhood: The radius of the neighborhood in meters.
+    :type D_neighborhood: float
 
-    :type Id:
-    :param Id:
+    :param Csize: The size of each pixel in meters.
+    :type Csize: float
 
-    :type Tab_corresp:
-    :param Tab_corresp:
+    :param dtm: The digital terrain model data.
+    :type dtm: numpy.ndarray
 
-    :type IdPix:
-    :param IdPix:
+    :param Obs: The obstacle data.
+    :type Obs: numpy.ndarray
 
-    :type Az:
-    :param Az:
+    :param min_slope: The minimum slope threshold for including neighboring pixels.
+    :type min_slope: float
 
-    :type Dist:
-    :param Dist:
+    :param max_slope: The maximum slope threshold for including neighboring pixels.
+    :type max_slope: float
 
-    :type min_slope:
-    :param min_slope:
+    :return: A tuple containing:
+             - The table of neighboring pixel indices for each pixel.
+             - The table of neighboring pixel coordinates for each pixel.
+             - The correspondence table mapping each pixel to its neighbors.
+             - The table of pixel indices.
+             - The slope values between each pixel and its neighbors.
+             - The distances to each neighbor.
+             - The azimuths to each neighbor.
+    :rtype: tuple
 
-    :type max_slope:
-    :param max_slope:
-
-    :type penalty_xy:
-    :param penalty_xy:
-
-    :type penalty_z:
-    :param penalty_z:
-
-    :type Dist_to_End:
-    :param Dist_to_End:
-
-    :type Local_Slope:
-    :param Local_Slope:
-
-    :type Perc_Slope:
-    :param Perc_Slope:
-
-    :type Csize:
-    :param Csize:
-
-    :type dtm:
-    :param dtm:
-
-    :type max_diff_z:
-    :param max_diff_z:
-
-    :type trans_slope_all:
-    :param trans_slope_all:
-
-    :type newObs:
-    :param newObs:
-
-    :type angle_hairpin:
-    :param angle_hairpin:
-
-    :type Lmax_ab_sl:
-    :param Lmax_ab_sl:
-
-    :type Radius:
-    :param Radius:
-
-    :type D_neighborhood:
-    :param D_neighborhood:
-
-    :type prop_sl_max:
-    :param prop_sl_max:
-
-    :type tal:
-    :param tal:
-
-    :type lpla:
-    :param lpla:
-
-    :raises:
-
-    :rtype:
-    """ 
+    :raises: None
+    """
 
     #1. Create neighborhood matrix with azimut and distance 
     nbpart = len(segments)
@@ -1492,29 +1505,38 @@ def Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
 
 def get_xy0(Extent,Csize):   
     
-    """ Description
-    :type Extent:
-    :param Extent:
+    """Calculate the coordinates of the origin point based on the provided extent and pixel size.
 
-    :type Csize:
-    :param Csize:
+    This function calculates the coordinates of the origin point (x0, y0) based on the provided
+    extent and pixel size. The origin point is the center of the first pixel in the raster grid.
 
-    :raises:
+    :param Extent: The extent of the raster dataset in the form [xmin, xmax, ymin, ymax].
+    :type Extent: list
+    :param Csize: The size of each pixel in meters.
+    :type Csize: float
 
-    :rtype:
+    :return: The coordinates of the origin point (x0, y0).
+    :rtype: tuple
+
+    :raises: None
     """
     return Extent[0]+0.5*Csize,Extent[3]-0.5*Csize
 
 
 def get_Slope(Dtm_file):
     
-    """ Description
-    :type Dtm_file:
-    :param Dtm_file:
+    """Calculate the slope from a digital terrain model (DTM) raster file.
 
-    :raises:
+    This function reads the provided DTM raster file and calculates the slope using GDAL's
+    DEMProcessing utility. The slope is computed in percent format.
 
-    :rtype:
+    :param Dtm_file: The file path to the digital terrain model (DTM) raster file.
+    :type Dtm_file: str
+
+    :return: The slope raster array representing the slope of the terrain in percent format.
+    :rtype: numpy.ndarray
+
+    :raises: None
     """
     a=gdal.DEMProcessing('slope', Dtm_file, 'slope',slopeFormat="percent",computeEdges=True,format='MEM')
     return a.GetRasterBand(1).ReadAsArray()
@@ -1523,34 +1545,51 @@ def get_Slope(Dtm_file):
 def create_res_dir(Result_Dir,trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,penalty_z,D_neighborhood):
     
     
-    """ Description
-    :type Result_Dir:
-    :param Result_Dir:
+    """Create a directory for storing simulation results based on specified parameters.
 
-    :type trans_slope_all:
-    :param trans_slope_all:
+    This function creates a directory within the specified Result_Dir to store simulation results.
+    The directory name is generated based on the provided parameters, including:
 
-    :type trans_slope_hairpin:
-    :param trans_slope_hairpin:
+    - trans_slope_all: Transition slope for all road sections.
+    - trans_slope_hairpin: Transition slope specifically for hairpin turns.
+    - min_slope: Minimum allowable slope for road segments.
+    - max_slope: Maximum allowable slope for road segments.
+    - penalty_xy: Penalty factor for changes in x-y direction.
+    - penalty_z: Penalty factor for changes in z (elevation) direction.
+    - D_neighborhood: Neighborhood distance for considering adjacent pixels in computations.
 
-    :type min_slope:
-    :param min_slope:
+    The directory name format is as follows:
+    Simu_<optnum>_Pl(<min_slope>-<max_slope>)_Pt(<trans_slope_all>-<trans_slope_hairpin>)_Pen(<penalty_xy>-<penalty_z>)_D(<D_neighborhood>)
 
-    :type max_slope:
-    :param max_slope:
+    :param Result_Dir: The path to the directory where simulation results will be stored.
+    :type Result_Dir: str
 
-    :type penalty_xy:
-    :param penalty_xy:
+    :param trans_slope_all: Transition slope for all road sections.
+    :type trans_slope_all: float
 
-    :type penalty_z:
-    :param penalty_z:
+    :param trans_slope_hairpin: Transition slope specifically for hairpin turns.
+    :type trans_slope_hairpin: float
 
-    :type D_neighborhood:
-    :param D_neighborhood:
+    :param min_slope: Minimum allowable slope for road segments.
+    :type min_slope: float
 
-    :raises:
+    :param max_slope: Maximum allowable slope for road segments.
+    :type max_slope: float
 
-    :rtype:
+    :param penalty_xy: Penalty factor for changes in x-y direction.
+    :type penalty_xy: float
+
+    :param penalty_z: Penalty factor for changes in z (elevation) direction.
+    :type penalty_z: float
+
+    :param D_neighborhood: Neighborhood distance for considering adjacent pixels in computations.
+    :type D_neighborhood: float
+
+
+    :return: The path to the created directory for storing simulation results.
+    :rtype: str
+
+    :raises: None
     """
     dirs = [d for d in os.listdir(Result_Dir) if os.path.isdir(os.path.join(Result_Dir, d))]
     list_dir = []
@@ -1570,13 +1609,22 @@ def create_res_dir(Result_Dir,trans_slope_all,trans_slope_hairpin,min_slope,max_
 
 def heures(Hdebut):
     
-    """ Description
-    :type Hdebut:
-    :param Hdebut:
+    """Calculate the duration between a given start time and the current time.
 
-    :raises:
+    This function takes a start time (Hdebut) as input and calculates the duration
+    between that start time and the current time (Hfin). It then formats this duration
+    along with the start and end times into strings.
 
-    :rtype:
+    :param Hdebut: The start time.
+    :type Hdebut: datetime.datetime
+
+    :return: A tuple containing:
+             - The formatted duration string (e.g., '3h 15m 20s').
+             - The formatted current time string.
+             - The formatted start time string.
+    :rtype: tuple
+
+    :raises: None
     """
     Hfin = datetime.datetime.now()
     duree = Hfin - Hdebut
@@ -1593,58 +1641,62 @@ def get_param(trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy
               Waypoints_file,Property_file,Csize,Lmax_ab_sl,Radius):
     
     
-    """ Description
-    :type trans_slope_all:
-    :param trans_slope_all:
+    """Generate a text summary of the parameters used for modeling.
 
-    :type trans_slope_hairpin:
-    :param trans_slope_hairpin:
+    This function constructs a text summary containing the filenames of the files
+    used for modeling (MNT, Points de passage, Foncier, and Dossier Obstacles) and
+    the parameters used for the modeling process.
 
-    :type min_slope:
-    :param min_slope:
+    :param trans_slope_all: Maximum slope in traverse direction at any point.
+    :type trans_slope_all: float
 
-    :type max_slope:
-    :param max_slope:
+    :param trans_slope_hairpin: Maximum slope in traverse direction for placing a hairpin turn.
+    :type trans_slope_hairpin: float
 
-    :type penalty_xy:
-    :param penalty_xy:
+    :param min_slope: Minimum slope in longitudinal direction.
+    :type min_slope: float
 
-    :type penalty_z:
-    :param penalty_z:
+    :param max_slope: Maximum slope in longitudinal direction.
+    :type max_slope: float
 
-    :type D_neighborhood:
-    :param D_neighborhood:
+    :param penalty_xy: Penalty for changing direction.
+    :type penalty_xy: float
 
-    :type max_diff_z:
-    :param max_diff_z:
+    :param penalty_z: Penalty for changing the slope direction.
+    :type penalty_z: float
 
-    :type angle_hairpin:
-    :param angle_hairpin:
+    :param D_neighborhood: Radius of search around a pixel.
+    :type D_neighborhood: float
 
-    :type Dtm_file:
-    :param Dtm_file:
+    :param max_diff_z: Maximum difference between terrain altitude and theoretical altitude of the trace.
+    :type max_diff_z: float
 
-    :type Obs_Dir:
-    :param Obs_Dir:
+    :param angle_hairpin: Angle beyond which a turn is considered a hairpin.
+    :type angle_hairpin: float
 
-    :type Waypoints_file:
-    :param Waypoints_file:
+    :param Dtm_file: Path to the Digital Terrain Model (MNT) file.
+    :type Dtm_file: str
 
-    :type Property_file:
-    :param Property_file:
+    :param Obs_Dir: Directory containing obstacle files.
+    :type Obs_Dir: str
 
-    :type Csize:
-    :param Csize:
+    :param Waypoints_file: Path to the waypoints file.
+    :type Waypoints_file: str
 
-    :type Lmax_ab_sl:
-    :param Lmax_ab_sl:
+    :param Property_file: Path to the property file.
+    :type Property_file: str
 
-    :type Radius:
-    :param Radius:
+    :param Csize: Resolution of the MNT file (cell size).
+    :type Csize: float
 
-    :raises:
+    :param Lmax_ab_sl: Maximum cumulative length with cross slope > maximum cross slope.
+    :type Lmax_ab_sl: float
 
-    :rtype:
+    :param Radius: Turning radius applied to hairpin turns.
+    :type Radius: float
+
+    :return: Text summary of the parameters used for modeling.
+    :rtype: str
     """
     txt = QCoreApplication.translate("MainWindow","FICHIERS UTILISES POUR LA MODELISATION:") + "\n\n"
     txt += QCoreApplication.translate("MainWindow","   - MNT :                   ") + Dtm_file+"\n"
@@ -1670,28 +1722,32 @@ def get_param(trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy
 
 def create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut):
     
-    """ Description
-    :type Rspace:
-    :param Rspace:
+    """Create a parameter file summarizing simulation results and processing details.
 
-    :type param:
-    :param param:
+    This function generates a text file containing details about the simulation parameters,
+    processing results, and execution duration.
 
-    :type res_process:
-    :param res_process:
+    :param Rspace: Directory where the parameter file will be saved.
+    :type Rspace: str
 
-    :type str_duree:
-    :param str_duree:
+    :param param: Text summary of the parameters used for modeling.
+    :type param: str
 
-    :type str_fin:
-    :param str_fin:
+    :param res_process: Text summary of the processing results.
+    :type res_process: str
 
-    :type str_debut:
-    :param str_debut:
+    :param str_duree: Duration of script execution.
+    :type str_duree: str
 
-    :raises:
+    :param str_fin: Date and time at the end of script execution.
+    :type str_fin: str
 
-    :rtype:
+    :param str_debut: Date and time at the start of script execution.
+    :type str_debut: str
+
+    :raises: None
+
+    :rtype: None
     """
     filename = Rspace +"Parametre_simulation.txt"    
     txt = QCoreApplication.translate("MainWindow","SylvaRoaD")+"\n\n"
@@ -1713,16 +1769,23 @@ def create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut):
 
 def get_points_from_waypoints(Waypoints_file,Dtm_file):
     
-    """ Description
-    :type Waypoints_file:
-    :param Waypoints_file:
+    """Retrieve points from a waypoints file and convert them to pixel coordinates.
 
-    :type Dtm_file:
-    :param Dtm_file:
+    This function reads a waypoints file containing point features with associated attributes
+    and converts the coordinates of each point to pixel coordinates based on the provided
+    digital terrain model (DTM) file. The waypoints file should contain fields for 'ID_TRON',
+    'ID_POINT', 'BUFF_POINT' to identify each point.
 
-    :raises:
+    :param Waypoints_file: Path to the waypoints file.
+    :type Waypoints_file: str
 
-    :rtype:
+    :param Dtm_file: Path to the digital terrain model (DTM) file.
+    :type Dtm_file: str
+
+    :raises: None
+
+    :return: Array containing points with pixel coordinates sorted by y-coordinate and then by x-coordinate.
+    :rtype: numpy.ndarray
     """
     #Open Dtm_file
     src_ds=gdal.Open(Dtm_file) 
@@ -1757,16 +1820,23 @@ def get_points_from_waypoints(Waypoints_file,Dtm_file):
 
 def get_waypoints(id_tron,pt_list): 
     
-    """ Description
-    :type id_tron:
-    :param id_tron:
+    """Retrieve waypoints corresponding to a specific road segment.
 
-    :type pt_list:
-    :param pt_list:
+    This function takes a road segment ID and a list of points, and returns a list of
+    waypoints representing the segment. Waypoints are defined by their starting and ending
+    coordinates and the associated buffer size.
 
-    :raises:
+    :param id_tron: ID of the road segment.
+    :type id_tron: int
 
-    :rtype:
+    :param pt_list: Array containing points with attributes.
+    :type pt_list: numpy.ndarray
+
+    :raises: None
+
+    :return: List of waypoints defining the road segment, each containing the starting and
+             ending coordinates and the associated buffer size.
+    :rtype: list
     """
     seg_list = []
     ptlist2 = pt_list[pt_list[:,0]==id_tron]
@@ -1783,72 +1853,90 @@ def save_param_file(Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_
                     trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,
                     penalty_z,D_neighborhood,max_diff_z,angle_hairpin,Lmax_ab_sl,Rspace,Radius):
     
-    """ Description
-    :type Wspace:
-    :param Wspace:
+    """Save simulation parameters to a NumPy file.
 
-    :type Dtm_file:
-    :param Dtm_file:
+    :param workspace: Workspace directory.
+    :type workspace: str
 
-    :type Obs_Dir:
-    :param Obs_Dir:
+    :param dtm_file: Path to the digital terrain model (DTM) file.
+    :type dtm_file: str
 
-    :type Waypoints_file:
-    :param Waypoints_file:
+    :param obs_dir: Directory containing obstacle files.
+    :type obs_dir: str
 
-    :type Property_file:
-    :param Property_file:
+    :param waypoints_file: Path to the waypoints file.
+    :type waypoints_file: str
 
-    :type Result_Dir:
-    :param Result_Dir:
+    :param property_file: Path to the property file.
+    :type property_file: str
 
-    :type trans_slope_all:
-    :param trans_slope_all:
+    :param result_dir: Directory to save simulation results.
+    :type result_dir: str
 
-    :type trans_slope_hairpin:
-    :param trans_slope_hairpin:
+    :param trans_slope_all: Maximum slope allowed in traverse direction.
+    :type trans_slope_all: float
 
-    :type min_slope:
-    :param min_slope:
+    :param trans_slope_hairpin: Maximum slope allowed for hairpin turns.
+    :type trans_slope_hairpin: float
 
-    :type max_slope:
-    :param max_slope:
+    :param min_slope: Minimum slope allowed.
+    :type min_slope: float
 
-    :type penalty_xy:
-    :param penalty_xy:
+    :param max_slope: Maximum slope allowed.
+    :type max_slope: float
 
-    :type penalty_z:
-    :param penalty_z:
+    :param penalty_xy: Penalty for changing direction.
+    :type penalty_xy: float
 
-    :type D_neighborhood:
-    :param D_neighborhood:
+    :param penalty_z: Penalty for changing longitudinal slope.
+    :type penalty_z: float
 
-    :type max_diff_z:
-    :param max_diff_z:
+    :param d_neighborhood: Distance around a pixel to consider for analysis.
+    :type d_neighborhood: float
 
-    :type angle_hairpin:
-    :param angle_hairpin:
+    :param max_diff_z: Maximum allowable difference between terrain altitude and
+                       theoretical track altitude.
+    :type max_diff_z: float
 
-    :type Lmax_ab_sl:
-    :param Lmax_ab_sl:
+    :param angle_hairpin: Angle beyond which a turn is considered a hairpin turn.
+    :type angle_hairpin: float
 
-    :type Rspace:
-    :param Rspace:
+    :param lmax_ab_sl: Maximum cumulative length with traverse slope greater than
+                       maximum traverse slope.
+    :type lmax_ab_sl: float
 
-    :type Radius:
-    :param Radius:
+    :param rspace: Path to save the simulation parameters.
+    :type rspace: str
 
-    :raises:
+    :param radius: Turning radius applied to hairpin turns.
+    :type radius: float
 
-    :rtype:
+    :raises: None
+
+    :rtype: None
     """
-    param = []
-    param.append([Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,
-                    Result_Dir,trans_slope_all,trans_slope_hairpin,
-                    min_slope,max_slope,penalty_xy,penalty_z,
-                    D_neighborhood,max_diff_z,angle_hairpin,Lmax_ab_sl,Radius])
-    param = np.array(param)
-    np.save(Rspace+"SylvaRoaD_param.npy",param)
+    parameters = {
+        'Workspace': Wspace,
+        'DTM_File': Dtm_file,
+        'Obs_Dir': Obs_Dir,
+        'Waypoints_File': Waypoints_file,
+        'Property_File': Property_file,
+        'Result_Dir': Result_Dir,
+        'Trans_Slope_All': trans_slope_all,
+        'Trans_Slope_Hairpin': trans_slope_hairpin,
+        'Min_Slope': min_slope,
+        'Max_Slope': max_slope,
+        'Penalty_XY': penalty_xy,
+        'Penalty_Z': penalty_z,
+        'D_Neighborhood': D_neighborhood,
+        'Max_Diff_Z': max_diff_z,
+        'Angle_Hairpin': angle_hairpin,
+        'Lmax_Ab_Sl': Lmax_ab_sl,
+        'Rspace': Rspace,
+        'Radius': Radius
+    }
+
+    np.save(Rspace + "SylvaRoaD_param.npy", parameters)
 
 
 def ArrayToGtiff(Array,file_name,Extent,nrows,ncols,road_network_proj,nodata_value,raster_type='INT32'):
@@ -1899,109 +1987,108 @@ def ArrayToGtiff(Array,file_name,Extent,nrows,ncols,road_network_proj,nodata_val
     target_ds.FlushCache()
 
 
-def test_point_within(segments,dtm,Obs,id_tron,res_process):    
-    
-    """ Description
-    :type segments:
-    :param segments:
+def test_point_within(segments, dtm, obs, id_tron, res_process):
+    """Check if points in segments are within the bounds of the digital terrain model (DTM)
+    and whether they fall within allowed regions or obstacles.
 
-    :type dtm:
-    :param dtm:
+    :param segments: List of segments containing points.
+    :type segments: list
 
-    :type Obs:
-    :param Obs:
+    :param dtm: Digital Terrain Model (DTM).
+    :type dtm: numpy.ndarray
 
-    :type id_tron:
-    :param id_tron:
+    :param obs: Array representing the allowed regions and obstacles.
+    :type obs: numpy.ndarray
 
-    :type res_process:
-    :param res_process:
+    :param id_tron: Tronçon ID.
+    :type id_tron: int
 
-    :raises:
+    :param res_process: Result process string.
+    :type res_process: str
 
-    :rtype:
+    :return: Tuple containing a test flag, result process string, and end point.
+    :rtype: tuple
     """
-    nrows,ncols = Obs.shape
-    #Check final point
-    txt=""
-    txt_deb = QCoreApplication.translate("MainWindow",'\n    Tronçon n°')+str(int(id_tron))+" : "
+    nrows, ncols = obs.shape
+    txt = ""
+    txt_deb = QCoreApplication.translate("MainWindow", f"\n    Tronçon n°{int(id_tron)}: ")
+    
     try:
-        end = segments[len(segments)-1][1]    
-        #Check initial point
+        end = segments[-1][1]  # Last point in the segments list
+        # Check initial point
         start = segments[0][0]
-        if start[0]<0 or start[0]>nrows or start[1]<0 or start[1]>ncols:
-            txt2 =  txt_deb + QCoreApplication.translate("MainWindow","Le point initial n'est pas dans l'emprise du MNT")
+        if not (0 <= start[0] < nrows and 0 <= start[1] < ncols):
+            txt2 = QCoreApplication.translate("MainWindow", "Le point initial n'est pas dans l'emprise du MNT")
             txt += txt2
-            res_process+= txt2
-        else:            
-            if Obs[start]== 2 :                
-                txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point initial n'est pas dans le parcellaire autorisé")
+            res_process += txt2
+        else:
+            if obs[start] == 2:
+                txt2 = txt_deb + QCoreApplication.translate("MainWindow", "Le point initial n'est pas dans le parcellaire autorisé")
                 txt += txt2
-                res_process+= txt2       
-            elif Obs[start]== 1 :
-                if dtm[start]==-9999:
-                    txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point initial n'a pas de valeur MNT valide")
+                res_process += txt2
+            elif obs[start] == 1:
+                if dtm[start] == -9999:
+                    txt2 = txt_deb + QCoreApplication.translate("MainWindow", "Le point initial n'a pas de valeur MNT valide")
                 else:
-                    txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point initial est sur un obstacle")
+                    txt2 = txt_deb + QCoreApplication.translate("MainWindow", "Le point initial est sur un obstacle")
                 txt += txt2
-                res_process+= txt2     
-        
-        #Check intermediate point
-        if len(txt)>0:
-            txt_deb = "\n                  "        
-        if len(segments)>1:    
-            for i in range(1,len(segments)):
-                txt_pt = QCoreApplication.translate("MainWindow","Le point de passage ID_POINT ")+str(i+1)
-                start = segments[i][0]
-                if start[0]<0 or start[0]>nrows or start[1]<0 or start[1]>ncols:
-                    txt2 = txt_deb + txt_pt + QCoreApplication.translate("MainWindow"," n'est pas dans l'emprise du MNT")
-                    txt += txt2
-                    res_process+= txt2
-                else:
-                    if Obs[start]== 2 :                
-                        txt2 = txt_deb + txt_pt+ QCoreApplication.translate("MainWindow"," n'est pas dans le parcellaire autorisé")
-                        txt += txt2
-                        res_process+= txt2       
-                    elif Obs[start]== 1 :
-                        if dtm[start]==-9999:
-                            txt2 = txt_deb +txt_pt+ QCoreApplication.translate("MainWindow"," n'a pas de valeur MNT valide")
-                        else:
-                            txt2 = txt_deb +txt_pt+ QCoreApplication.translate("MainWindow"," est sur un obstacle")
-                        txt += txt2
-                        res_process+= txt2   
-        
-        #check final point
-        if len(txt)>0:
+                res_process += txt2
+
+        # Check intermediate points
+        if len(txt) > 0:
             txt_deb = "\n                  "
-        if end[0]<0 or end[0]>nrows or end[1]<0 or end[1]>ncols:
-            txt2 =  txt_deb + QCoreApplication.translate("MainWindow","Le point final n'est pas dans l'emprise du MNT")
+        for i, (start, _) in enumerate(segments[1:], start=1):
+            txt_pt = QCoreApplication.translate("MainWindow", f"Le point de passage ID_POINT {i+1}")
+            if not (0 <= start[0] < nrows and 0 <= start[1] < ncols):
+                txt2 = txt_deb + txt_pt + QCoreApplication.translate("MainWindow", " n'est pas dans l'emprise du MNT")
+                txt += txt2
+                res_process += txt2
+            else:
+                if obs[start] == 2:
+                    txt2 = txt_deb + txt_pt + QCoreApplication.translate("MainWindow", " n'est pas dans le parcellaire autorisé")
+                    txt += txt2
+                    res_process += txt2
+                elif obs[start] == 1:
+                    if dtm[start] == -9999:
+                        txt2 = txt_deb + txt_pt + QCoreApplication.translate("MainWindow", " n'a pas de valeur MNT valide")
+                    else:
+                        txt2 = txt_deb + txt_pt + QCoreApplication.translate("MainWindow", " est sur un obstacle")
+                    txt += txt2
+                    res_process += txt2
+
+        # Check final point
+        if len(txt) > 0:
+            txt_deb = "\n                  "
+        if not (0 <= end[0] < nrows and 0 <= end[1] < ncols):
+            txt2 = txt_deb + QCoreApplication.translate("MainWindow", "Le point final n'est pas dans l'emprise du MNT")
             txt += txt2
-            res_process+= txt2
-        else:           
-            if Obs[end]== 2 :                
-                txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point final n'est pas dans le parcellaire autorisé")
+            res_process += txt2
+        else:
+            if obs[end] == 2:
+                txt2 = txt_deb + QCoreApplication.translate("MainWindow", "Le point final n'est pas dans le parcellaire autorisé")
                 txt += txt2
-                res_process+= txt2       
-            elif Obs[end]== 1 :
-                if dtm[end]==-9999:
-                    txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point final n'a pas de valeur MNT valide")
+                res_process += txt2
+            elif obs[end] == 1:
+                if dtm[end] == -9999:
+                    txt2 = txt_deb + QCoreApplication.translate("MainWindow", "Le point final n'a pas de valeur MNT valide")
                 else:
-                    txt2 = txt_deb + QCoreApplication.translate("MainWindow","Le point final est sur un obstacle")
+                    txt2 = txt_deb + QCoreApplication.translate("MainWindow", "Le point final est sur un obstacle")
                 txt += txt2
-                res_process+= txt2     
-        
-    except:
-        txt = QCoreApplication.translate("MainWindow",'    Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow"," : Il faut au minimum deux points pour réaliser l'analyse")
-        res_process+= txt
-        end=""
-            
-    if len(txt)>0: 
-        test=0
+                res_process += txt2
+
+    except IndexError:
+        txt = QCoreApplication.translate("MainWindow", f"    Tronçon n°{int(id_tron)}: Il faut au minimum deux points pour réaliser l'analyse")
+        res_process += txt
+        end = ""
+
+    if len(txt) > 0:
+        test = 0
         console_info(txt)
         res_process += '\n'
     else:
-        test=1
-    return test, res_process,end
+        test = 1
+
+    return test, res_process, end
       
     
 def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,
@@ -2010,61 +2097,37 @@ def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Resu
                               Lmax_ab_sl,Wspace,Radius):
 
     
-    """ Description
-    :type Dtm_file:
-    :param Dtm_file:
+    """ 
+    Execute road finding algorithm using waypoints with force for each waypoint.
 
-    :type Obs_Dir:
-    :param Obs_Dir:
+    This function executes a road finding algorithm using waypoints, with the requirement
+    of forcing a path through each specified waypoint. It takes into account various parameters
+    and constraints to optimize the path planning process.
 
-    :type Waypoints_file:
-    :param Waypoints_file:
+    Args:
+    - Dtm_file (str): The path to the digital terrain model (DTM) file.
+    - Obs_Dir (str): The directory containing obstacle data files.
+    - Waypoints_file (str): The path to the file containing waypoint data.
+    - Property_file (str): The path to the file containing property data.
+    - Result_Dir (str): The directory where result files will be saved.
+    - trans_slope_all (float): Maximum allowable slope in any direction.
+    - trans_slope_hairpin (float): Maximum allowable slope for hairpin turns.
+    - min_slope (float): Minimum slope allowed on the road.
+    - max_slope (float): Maximum slope allowed on the road.
+    - penalty_xy (float): Penalty for changes in direction.
+    - penalty_z (float): Penalty for changes in longitudinal slope.
+    - D_neighborhood (float): Neighborhood distance for path planning.
+    - max_diff_z (float): Maximum allowable difference between actual and theoretical elevation.
+    - angle_hairpin (float): Angle beyond which a turn is considered a hairpin turn.
+    - Lmax_ab_sl (float): Maximum cumulative length with transverse slope greater than max_slope.
+    - Wspace (str): The working space directory.
+    - Radius (float): Radius of curvature applied to hairpin turns.
 
-    :type Property_file:
-    :param Property_file:
+    Raises:
+    - None
 
-    :type Result_Dir:
-    :param Result_Dir:
-
-    :type trans_slope_all:
-    :param trans_slope_all:
-
-    :type trans_slope_hairpin:
-    :param trans_slope_hairpin:
-
-    :type min_slope:
-    :param min_slope:
-
-    :type max_slope:
-    :param max_slope:
-
-    :type penalty_xy:
-    :param penalty_xy:
-
-    :type penalty_z:
-    :param penalty_z:
-
-    :type D_neighborhood:
-    :param D_neighborhood:
-
-    :type max_diff_z:
-    :param max_diff_z:
-
-    :type angle_hairpin:
-    :param angle_hairpin:
-
-    :type Lmax_ab_sl:
-    :param Lmax_ab_sl:
-
-    :type Wspace:
-    :param Wspace:
-
-    :type Radius:
-    :param Radius:
-
-    :raises:
-
-    :rtype:
+    Returns:
+    - None
     """
     ver = "0.2"
     txt = ""
@@ -2664,8 +2727,4 @@ def calcul_distance_de_cout(yE, xE, zone_rast, Csize, Max_distance=100000):
                 Out_distance[y, x] = -9999
                 
     return Out_distance
-
-
-
-
 
