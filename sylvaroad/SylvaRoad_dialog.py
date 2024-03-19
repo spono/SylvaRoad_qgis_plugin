@@ -551,185 +551,176 @@ def test_point_within(segments, dtm, obs, id_tron, res_process):
     return test, res_process, end
       
     
-def road_finder_exec_force_wp(Dtm_file, Obs_Dir, Waypoints_file, Property_file, Result_Dir,
-                                        trans_slope_all, trans_slope_hairpin, min_slope, max_slope,
-                                        penalty_xy, penalty_z, D_neighborhood, max_diff_z, angle_hairpin,
-                                        Lmax_ab_sl, Wspace, Radius):
+def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,
+                              trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
+                              penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
+                              Lmax_ab_sl,Wspace,Radius):
+
     
-    
-    """
+    """ 
     Execute road finding algorithm using waypoints with force for each waypoint.
+
     This function executes a road finding algorithm using waypoints, with the requirement
     of forcing a path through each specified waypoint. It takes into account various parameters
     and constraints to optimize the path planning process.
+
     Args:
-        - Dtm_file (str): The path to the digital terrain model (DTM) file.
-        - Obs_Dir (str): The directory containing obstacle data files.
-        - Waypoints_file (str): The path to the file containing waypoint data.
-        - Property_file (str): The path to the file containing property data.
-        - Result_Dir (str): The directory where result files will be saved.
-        - trans_slope_all (float): Maximum allowable slope in any direction.
-        - trans_slope_hairpin (float): Maximum allowable slope for hairpin turns.
-        - min_slope (float): Minimum slope allowed on the road.
-        - max_slope (float): Maximum slope allowed on the road.
-        - penalty_xy (float): Penalty for changes in direction.
-        - penalty_z (float): Penalty for changes in longitudinal slope.
-        - D_neighborhood (float): Neighborhood distance for path planning.
-     - max_diff_z (float): Maximum allowable difference between actual and theoretical elevation.
-        - angle_hairpin (float): Angle beyond which a turn is considered a hairpin turn.
-        - Lmax_ab_sl (float): Maximum cumulative length with transverse slope greater than max_slope.
-        - Wspace (str): The working space directory.
-        - Radius (float): Radius of curvature applied to hairpin turns.
+    - Dtm_file (str): The path to the digital terrain model (DTM) file.
+    - Obs_Dir (str): The directory containing obstacle data files.
+    - Waypoints_file (str): The path to the file containing waypoint data.
+    - Property_file (str): The path to the file containing property data.
+    - Result_Dir (str): The directory where result files will be saved.
+    - trans_slope_all (float): Maximum allowable slope in any direction.
+    - trans_slope_hairpin (float): Maximum allowable slope for hairpin turns.
+    - min_slope (float): Minimum slope allowed on the road.
+    - max_slope (float): Maximum slope allowed on the road.
+    - penalty_xy (float): Penalty for changes in direction.
+    - penalty_z (float): Penalty for changes in longitudinal slope.
+    - D_neighborhood (float): Neighborhood distance for path planning.
+    - max_diff_z (float): Maximum allowable difference between actual and theoretical elevation.
+    - angle_hairpin (float): Angle beyond which a turn is considered a hairpin turn.
+    - Lmax_ab_sl (float): Maximum cumulative length with transverse slope greater than max_slope.
+    - Wspace (str): The working space directory.
+    - Radius (float): Radius of curvature applied to hairpin turns.
+
     Raises:
-        - None
+    - None
+
     Returns:
-        - None
+    - None
     """
     ver = "0.2"
     txt = ""
-    console_info(QCoreApplication.translate("MainWindow", "SylvaRoaD - Version ") + ver)
+    console_info(QCoreApplication.translate("MainWindow","SylvaRoaD - Version ")+ver)
     Hdebut = datetime.datetime.now()
-    console_info(QCoreApplication.translate("MainWindow", "  Verification des donnees spatiales"))
-    # Test if spatial data are OK
-    test, mess, Csize = check_files(Dtm_file, Waypoints_file, Property_file)
-
-    # Save parameters into npy file
-    param = get_param(trans_slope_all, trans_slope_hairpin,
-                      min_slope, max_slope,
-                      penalty_xy, penalty_z,
-                      D_neighborhood, max_diff_z, angle_hairpin,
-                      Dtm_file, Obs_Dir, Waypoints_file, Property_file, Csize, Lmax_ab_sl, Radius)
-
-    Rspace = create_res_dir(Result_Dir,
-                            trans_slope_all, trans_slope_hairpin,
-                            min_slope, max_slope,
-                            penalty_xy, penalty_z,
-                            D_neighborhood)
-    save_param_file(Wspace, Dtm_file, Obs_Dir, Waypoints_file, Property_file,
-                    Result_Dir, trans_slope_all, trans_slope_hairpin,
-                    min_slope, max_slope, penalty_xy, penalty_z,
-                    D_neighborhood, max_diff_z, angle_hairpin, Lmax_ab_sl,
-                    Rspace, Radius)
-
+    console_info(QCoreApplication.translate("MainWindow","  Verification des donnees spatiales"))
+    #Test if spatial data are OK
+    test,mess,Csize = check_files(Dtm_file,Waypoints_file,Property_file)
+    
+    #Save parameters into npy file
+    param = get_param(trans_slope_all,trans_slope_hairpin,
+              min_slope,max_slope,
+              penalty_xy,penalty_z,
+              D_neighborhood,max_diff_z,angle_hairpin,
+              Dtm_file,Obs_Dir,Waypoints_file,Property_file,Csize,Lmax_ab_sl,Radius)
+    
+    Rspace =create_res_dir(Result_Dir,
+                           trans_slope_all,trans_slope_hairpin,
+                           min_slope,max_slope,
+                           penalty_xy,penalty_z,
+                           D_neighborhood)
+    
+    save_param_file(Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,
+                    Result_Dir,trans_slope_all,trans_slope_hairpin,
+                    min_slope,max_slope,penalty_xy,penalty_z,
+                    D_neighborhood,max_diff_z,angle_hairpin,Lmax_ab_sl,
+                    Rspace,Radius)
+    
     if not test:
         console_info(mess)
-
-    else:
-        console_info(QCoreApplication.translate("MainWindow", "  Chargement des donnees"))
-        # load data
-        dtm, Extent, Csize, proj = load_float_raster(Dtm_file)
-        nrows, ncols = dtm.shape
-        if Obs_Dir != '':
-            Obs = prepa_obstacle(Obs_Dir, Extent, Csize, ncols, nrows)
+        
+    else:    
+        console_info(QCoreApplication.translate("MainWindow","  Chargement des donnees"))
+        #load data   
+        dtm,Extent,Csize,proj = load_float_raster(Dtm_file)
+        nrows,ncols=dtm.shape
+        if Obs_Dir!='':
+            Obs = prepa_obstacle(Obs_Dir,Extent,Csize,ncols,nrows)
         else:
-            Obs = np.zeros_like(dtm, dtype=np.int8)
-
-        pt_list = get_points_from_waypoints(Waypoints_file, Dtm_file)
-        tron_list = np.unique(pt_list[:, 0])
-
-        if Property_file != "":
-            Fonc = shapefile_to_np_array(Property_file, Extent, Csize, "FONC_OK",
-                                         order_field=None, order=None)
+            Obs = np.zeros_like(dtm,dtype=np.int8)
+        
+        pt_list=get_points_from_waypoints(Waypoints_file,Dtm_file)  
+        tron_list = np.unique(pt_list[:,0])
+        
+        if Property_file!="":
+            Fonc = shapefile_to_np_array(Property_file,Extent,Csize,"FONC_OK",
+                                     order_field=None,order=None)
         else:
-            Fonc = np.ones_like(dtm, dtype=np.int8)
-
-        # get useful variables
-        console_info(QCoreApplication.translate("MainWindow", "  Initialisation du traitement"))
-
-        road_network_proj, proj = get_proj_from_road_network(Waypoints_file)
-        Obs[dtm == -9999] = 1
-        Obs[Fonc == 0] = 2
+            Fonc = np.ones_like(dtm,dtype=np.int8)
+        
+        #get usefull variables
+        console_info(QCoreApplication.translate("MainWindow","  Initialisation du traitement"))
+           
+        road_network_proj,proj = get_proj_from_road_network(Waypoints_file)  
+        Obs[dtm==-9999]=1
+        Obs[Fonc==0]=2
         del Fonc
-
-        # Compute Slope raster and Local Slope raster
+        
+        
+        #Compute Slope raster and Local Slope raster
         Perc_Slope = get_Slope(Dtm_file)
-        Perc_Slope[dtm == -9999] = -9999
-        Local_Slope = calc_local_slope(Perc_Slope, 1.25 * Radius, Csize, trans_slope_hairpin)
-
-        # Build neighborhood table
-        IdVois, Id, Tab_corresp, IdPix, Slope, Dist, Az = build_NeibTable(D_neighborhood, Csize, dtm, np.int8(Obs > 0),
-                                                                          min_slope, max_slope)
-
-        res_process = QCoreApplication.translate("MainWindow", '\n\nRésultat par tronçon')
-
-        Generaltest = 0
-
-        for id_tron in tron_list:
-            console_info(QCoreApplication.translate("MainWindow", "  Traitement du tronçon n°") + str(id_tron))
-            segments = get_waypoints(id_tron, pt_list)
-            # Check if points are within MNT/property and are not obstacles
-            test, res_process, end = test_point_within(segments, dtm, Obs, id_tron, res_process)
-            if not test:
-                continue
-
-            # Check if points are within possible prospection
-            Dist_to_End = calcul_distance_de_cout(end[0], end[1], np.int8(Obs == 0), Csize, Max_distance=100000)
-            test = 1
-            for i in range(0, len(segments)):
+        Perc_Slope[dtm==-9999]=-9999
+        Local_Slope =  calc_local_slope(Perc_Slope,1.25*Radius,Csize,trans_slope_hairpin)                            
+          
+        #Build neigborhood table
+        IdVois, Id, Tab_corresp,IdPix,Slope,Dist,Az = build_NeibTable(D_neighborhood,Csize,dtm,np.int8(Obs>0),min_slope,max_slope)
+        
+        res_process = QCoreApplication.translate("MainWindow",'\n\nRésultat par tronçon')
+        
+        Generaltest=0
+        
+        for id_tron in tron_list:  
+            console_info(QCoreApplication.translate("MainWindow","  Traitement du tronçon n°")+str(id_tron))
+            segments = get_waypoints(id_tron,pt_list)           
+            #Check if points are within MNT/property and are not ostacles
+            test, res_process,end = test_point_within(segments,dtm,Obs,id_tron,res_process)
+            if not test : continue
+                
+            #Check if points are within possible prospection
+            Dist_to_End =  calcul_distance_de_cout(end[0],end[1],np.int8(Obs==0),Csize,Max_distance=100000)    
+            test=1
+            for i in range(0,len(segments)):
                 start = segments[i][0]
-                if Dist_to_End[start] < 0:
-                    if i == 0:
-                        txt = QCoreApplication.translate("MainWindow", '   Tronçon n°') + str(
-                            int(id_tron)) + QCoreApplication.translate("MainWindow",
-                                                                         ' : Des obstacles empêchent de joindre le début et la fin du tronçon')
+                if Dist_to_End[start]<0:                    
+                    if i==0:
+                        txt = QCoreApplication.translate("MainWindow",'   Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Des obstacles empêchent de joindre le début et la fin du tronçon')
                     else:
-                        txt = QCoreApplication.translate("MainWindow", '   Tronçon n°') + str(
-                            int(id_tron)) + QCoreApplication.translate("MainWindow",
-                                                                         " : Des obstacles empêchent d'atteindre le point de passage ID_POINT ") + str(
-                            i + 1)
+                        txt = QCoreApplication.translate("MainWindow",'   Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow"," : Des obstacles empêchent d'atteindre le point de passage ID_POINT ")+str(i+1)
                     console_info(txt)
-                    res_process += txt + '\n'
-                    test = 0
-
-            if not test:
-                continue
-
-            # Process
-            newObs = np.copy(np.int8(Obs > 0))
-            newObs[Dist_to_End < 0] = 1
+                    res_process+= txt+'\n'
+                    test=0
+            
+            if not test:continue
+            
+            #Process
+            newObs = np.copy(np.int8(Obs>0))
+            newObs[Dist_to_End<0]=1
             txt = ""
+            
+            Path,test = Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
+                                    min_slope,max_slope,penalty_xy,penalty_z,Dist_to_End,
+                                    Local_Slope,Perc_Slope,Csize,dtm,max_diff_z,
+                                    trans_slope_all,newObs,angle_hairpin,Lmax_ab_sl,Radius,
+                                    D_neighborhood)
+            
+            Lsl=np.sum(Path[:,6]) 
+            nb_lac = len(get_id_lacets(Path,angle_hairpin))  
+            if test==1:                             
+                Path_to_lineshape(Path,Rspace+'Troncon_'+str(int(id_tron))+'_complet.shp',proj,Extent,Csize,dtm,nb_lac)   
+                if nb_lac>0:
+                    NewPath = trace_lace(Path, Radius,Extent,Csize,angle_hairpin,dtm,coefplat=2)
+                    NewPath_to_lineshape(NewPath,Rspace+'Troncon_'+str(int(id_tron))+'_lacets_corriges.shp',proj)                     
+                    if  Generaltest==0:
+                        ArrayToGtiff(Local_Slope,Rspace+"PenteLocale_Lacet",Extent,nrows,ncols,road_network_proj,255,raster_type='UINT8') 
+                        Generaltest=1
+                    #Path_to_lace(Path,Rspace+'Lacets_Troncon_'+str(int(id_tron))+'.shp',proj,Extent,Csize,dtm)
+                txt = QCoreApplication.translate("MainWindow",'\n    Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Un chemin optimal a été trouvé. ')
+                txt +=QCoreApplication.translate("MainWindow",'\n                  Longueur planimétrique : ')+str(int((Path[-1,4])+0.5))+" m"
+                if nb_lac>0:
+                    txt +=QCoreApplication.translate("MainWindow",'\n                  Longueur planimétrique (avec lacets corrigés) : ')
+                    txt +=str(int(np.sum(NewPath[:,4])+0.5))+" m"
+                txt +=QCoreApplication.translate("MainWindow",'\n                  Nombre de lacets : ')+str(int(nb_lac))
+                if Lsl>0:
+                    txt += "\n                  "+ QCoreApplication.translate("MainWindow","Sur ")+str(int(Lsl+0.5))+QCoreApplication.translate("MainWindow"," m, la pente en travers est supérieure à la pente en travers max.")
+                console_info(txt) 
+                
+            else: 
+                Path_to_lineshape(Path,Rspace+'Troncon_'+str(int(id_tron))+'_incomplet.shp',proj,Extent,Csize,dtm,nb_lac)
+                txt += QCoreApplication.translate("MainWindow",'\n    Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Aucun chemin trouvé. ')
+                txt += QCoreApplication.translate("MainWindow",'\n                  Le chemin le plus proche du but a été sauvegardé. ')               
+                console_info(txt) 
+            res_process+= txt+"\n"
 
-            Path, test = Astar_buf_wp(segments, Slope, IdVois, Id, Tab_corresp, IdPix, Az, Dist,
-                                       min_slope, max_slope, penalty_xy, penalty_z, Dist_to_End,
-                                       Local_Slope, Perc_Slope, Csize, dtm, max_diff_z,
-                                       trans_slope_all, newObs, angle_hairpin, Lmax_ab_sl, Radius,
-                                       D_neighborhood)
-
-            Lsl = np.sum(Path[:, 6])
-            nb_lac = len(get_id_lacets(Path, angle_hairpin))
-            if test == 1:
-                Path_to_lineshape(Path, Rspace + 'Troncon_' + str(int(id_tron)) + '_complet.shp', proj, Extent,
-                                  Csize, dtm, nb_lac)
-                if nb_lac > 0:
-                    NewPath = trace_lace(Path, Radius, Extent, Csize, angle_hairpin, dtm, coefplat=2)
-                    NewPath_to_lineshape(NewPath, Rspace + 'Troncon_' + str(int(id_tron)) + '_lacets_corriges.shp',
-                                         proj)
-                    if Generaltest == 0:
-                        ArrayToGtiff(Local_Slope, Rspace + "PenteLocale_Lacet", Extent, nrows, ncols,
-                                     road_network_proj, 255, raster_type='UINT8')
-                        Generaltest = 1
-                txt = QCoreApplication.translate("MainWindow", '\n    Tronçon n°') + str(
-                    int(id_tron)) + QCoreApplication.translate("MainWindow", ' : Un chemin optimal a été trouvé. ')
-                txt += QCoreApplication.translate("MainWindow", '\n                  Longueur planimétrique : ') + str(
-                    int((Path[-1, 4]) + 0.5)) + " m"
-                if nb_lac > 0:
-                    txt += QCoreApplication.translate("MainWindow",
-                                                       '\n                  Longueur planimétrique (avec lacets corrigés) : ')
-                    txt += str(int(np.sum(NewPath[:, 4]) + 0.5)) + " m"
-                txt += QCoreApplication.translate("MainWindow", '\n                  Nombre de lacets : ') + str(int(nb_lac))
-                if Lsl > 0:
-                    txt += "\n                  " + QCoreApplication.translate("MainWindow","Sur ") + str(int(Lsl + 0.5)) + QCoreApplication.translate("MainWindow"," m, la pente en travers est supérieure à la pente en travers max.")
-                console_info(txt)
-
-            else:
-                Path_to_lineshape(Path, Rspace + 'Troncon_' + str(int(id_tron)) + '_incomplet.shp', proj, Extent,
-                                  Csize, dtm, nb_lac)
-                txt += QCoreApplication.translate("MainWindow", '\n    Tronçon n°') + str(
-                    int(id_tron)) + QCoreApplication.translate("MainWindow", ' : Aucun chemin trouvé. ')
-                txt += QCoreApplication.translate("MainWindow", '\n                  Le chemin le plus proche du but a été sauvegardé. ')
-                console_info(txt)
-            res_process += txt + "\n"
-
-        str_duree, str_fin, str_debut = heures(Hdebut)
-        create_param_file(Rspace, param, res_process, str_duree, str_fin, str_debut)
-        console_info(QCoreApplication.translate("MainWindow", "  Tous les tronçons ont été traités"))
+        str_duree,str_fin,str_debut=heures(Hdebut)        
+        create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut)
+        console_info(QCoreApplication.translate("MainWindow","  Tous les tronçons ont été traités"))

@@ -91,12 +91,11 @@ def get_intersect(a1y, a1x, a2y, a2x, b1y, b1x, b2y, b2x):
     x = l1z * l2y - l1y * l2z
     z = l1y * l2x - l1x * l2y
     
-    # Check if lines are parallel
-    if z == 0:  
-        return 0
     
-    xi = x / z
-    yi = y / z
+    if z == 0:  # lines are parallel
+        return 0
+
+    xi, yi = x / z, y / z
     
     # Check if intersection point lies outside the line segments' boundaries
     if (xi < max(min(a1x, a2x), min(b1x, b2x)) or

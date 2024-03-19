@@ -1351,7 +1351,6 @@ def create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut):
     fichier.close()
     
 
-
 def get_points_from_waypoints(Waypoints_file,Dtm_file):
     
     """Retrieve points from a waypoints file and convert them to pixel coordinates.
@@ -1402,7 +1401,6 @@ def get_points_from_waypoints(Waypoints_file,Dtm_file):
     ind = np.lexsort((pt_list[:,1], pt_list[:,0]))   
      
     return pt_list[ind]
-
     
 
 def get_waypoints(id_tron,pt_list): 
@@ -1435,7 +1433,6 @@ def get_waypoints(id_tron,pt_list):
         seg_list.append([start,end,ptlist2[i+1,2]])
     return seg_list
     
-
 
 def save_param_file(Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,
                     trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,
@@ -1526,7 +1523,6 @@ def save_param_file(Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_
 
     np.save(Rspace + "SylvaRoaD_param.npy", parameters)
     
-
 
 def ArrayToGtiff(Array,file_name,Extent,nrows,ncols,road_network_proj,nodata_value,raster_type='INT32'):
     """
