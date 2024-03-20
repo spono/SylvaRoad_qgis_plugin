@@ -20,456 +20,408 @@
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt.QtCore import QCoreApplication
+import os
+from .GIS import raster_get_info,check_field,ArrayToGtiff,shapefile_to_np_array,load_float_raster,get_points_from_waypoints,Astar_buf_wp,get_Slope
+from .GIS import get_waypoints,prepa_obstacle,Path_to_lineshape,NewPath_to_lineshape,test_point_within,get_id_lacets,trace_lace,get_proj_from_road_network
+from .console import printor
+from .functions_np import build_NeibTable,calcul_distance_de_cout,calc_local_slope,save_param_file
 import numpy as np
+      
 
+def road_finder_exec_force_wp1(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,                              
+                              trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
+                              penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
+                              Lmax_ab_sl,Wspace,Radius):
+    printor(1)
 
+    #Test if spatial data are OK
+    test,mess,Csize = check_files(Dtm_file,Waypoints_file,Property_file)
+    
+    #Save parameters into npy file
+    param = get_param(trans_slope_all,trans_slope_hairpin,
+              min_slope,max_slope,
+              penalty_xy,penalty_z,
+              D_neighborhood,max_diff_z,angle_hairpin,
+              Dtm_file,Obs_Dir,Waypoints_file,Property_file,Csize,Lmax_ab_sl,Radius)
+    
+    Rspace =create_res_dir(Result_Dir,
+                           trans_slope_all,trans_slope_hairpin,
+                           min_slope,max_slope,
+                           penalty_xy,penalty_z,
+                           D_neighborhood)
+    
+    save_param_file(Wspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,
+                    Result_Dir,trans_slope_all,trans_slope_hairpin,
+                    min_slope,max_slope,penalty_xy,penalty_z,
+                    D_neighborhood,max_diff_z,angle_hairpin,Lmax_ab_sl,
+                    Rspace,Radius)
+    res_process = road_finder_exec_force_wp2(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
+                              trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
+                              penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
+                              Lmax_ab_sl,Radius,test,mess,Csize,Rspace)
+    
+    return Rspace,param,res_process
+    
 
-#############################################################
+def road_finder_exec_force_wp2(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
+                              trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
+                              penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
+                              Lmax_ab_sl,Radius,test,mess,Csize,Rspace):
+    
 
-
-#CYTHON
+    if not test:
+        printor(2,mess)
         
-
-#############################################################
-
-
-def calculate_azimut(x1, y1, x2, y2):
-    DX = x2 - x1
-    DY = y2 - y1
-    Angle = np.arctan2(DY, DX) * 180/ np.pi
-    Angle = (Angle + 360) % 360
-    return Angle
-
-
-def conv_az_to_polar(az):
-    val = (450 - az) % 360
-    return val
-
-
-def diff_az(az_to, az_from):
-    diff_clockwise = (az_to - az_from) % 360
-    diff_counterclockwise = (az_from - az_to) % 360
-    return min(diff_clockwise, diff_counterclockwise)
-
-
-def check_focal_nb(raster, rayon, Csize, x1, y1, nline, ncol, trans_slope_hairpin):
-    cote = int(rayon / Csize)
-    nbsup,nb = 0,0
-    for y in range(max(0, y1 - cote), min(nline, y1 + cote + 1)):
-        for x in range(max(0, x1 - cote), min(ncol, x1 + cote + 1)):
-            if np.sqrt((x1 - x) ** 2 + (y1 - y) ** 2) * Csize > rayon:
-                continue
-            if raster[y, x] != -9999:
-                nb += 1
-            if raster[y, x] > trans_slope_hairpin:
-                nbsup += 1
-    
-    return 1. * nbsup / nb
-
-
-def calc_local_slope(raster, rayon, Csize, trans_slope_hairpin):
-    nline, ncol = raster.shape
-    local_slope = np.ones((nline, ncol), dtype=np.uint8) * 255
-    for y in range(nline):
-        for x in range(ncol):
-            if raster[y, x] != -9999:
-                local_slope[y, x] = int(100 * check_focal_nb(raster, rayon, Csize, x, y, nline, ncol, trans_slope_hairpin) + 0.5)
-    
-    return local_slope
-
-
-def get_intersect(a1y, a1x, a2y, a2x, b1y, b1x, b2y, b2x):
-    l1y = a1x - a2x
-    l1x = a2y - a1y
-    l1z = a1y * a2x - a1x * a2y
-    
-    l2y = b1x - b2x
-    l2x = b2y - b1y
-    l2z = b1y * b2x - b1x * b2y
-    
-    y = l1x * l2z - l1z * l2x
-    x = l1z * l2y - l1y * l2z
-    z = l1y * l2x - l1x * l2y
-    
-    
-    if z == 0:  # lines are parallel
-        return 0
-
-    xi, yi = x / z, y / z
-    
-    # Check if intersection point lies outside the line segments' boundaries
-    if (xi < max(min(a1x, a2x), min(b1x, b2x)) or
-        xi > min(max(a1x, a2x), max(b1x, b2x)) or
-        yi < max(min(a1y, a2y), min(b1y, b2y)) or
-        yi > min(max(a1y, a2y), max(b1y, b2y))):
-        return 0
-    
-    return 1
-
-
-def Distplan(y, x, yE, xE):
-    return np.sqrt((y - yE) * (y - yE) + (x - xE) * (x - xE))
-
-
-def connect2(yc, xc, y, x):
-    d0 = y - yc
-    d1 = x - xc
-    sign = 1
-    
-    if abs(d0) > abs(d1): 
-        if d0 < 0:
-            sign = -1
-        ys = np.arange(yc, y + sign, sign, dtype=np.int32)  
-        if d1 == 0:
-            xs = np.ones_like(ys, dtype=np.int32) * xc
+    else:    
+        printor(3)
+        #load data   
+        dtm,Extent,Csize,proj = load_float_raster(Dtm_file)
+        nrows,ncols=dtm.shape
+        if Obs_Dir!='':
+            Obs = prepa_obstacle(Obs_Dir,Extent,Csize,ncols,nrows)
         else:
-            xs = np.int32(np.arange(xc * abs(d0) + np.floor(abs(d0) / 2),
-                           xc * abs(d0) + np.floor(abs(d0) / 2) + (abs(d0) + 1) * d1,
-                           d1, dtype=np.int32) / abs(d0))
-    else:
-        if d1 < 0:
-            sign = -1
-        xs = np.arange(xc, x + sign, sign, dtype=np.int32)
-        if d0 == 0:            
-            ys = np.ones_like(xs, dtype=np.int32) * yc
-        else:
-            ys = np.int32(np.arange(yc * abs(d1) + np.floor(abs(d1) / 2),
-                           yc * abs(d1) + np.floor(abs(d1) / 2) + (abs(d1) + 1) * d0, 
-                           d0, dtype=np.int32) / abs(d1))
-    
-    return ys, xs
-
-
-def check_profile(yc, xc, y, x, slope_perc, dtm, Csize, max_diff_z, Obs, Obs2, Ls, Lmax_ab_sl):
-    ys, xs = connect2(yc, xc, y, x)
-    test = 1
-    nbpix = ys.shape[0]
-    i = 0
-    sumobs2 = 0
-    newLsl = Ls
-    z = 0
-    zline = 0
-    Dhor = 0
-    zo = dtm[yc, xc]
-    diffz = 0
-
-    for i in range(nbpix):
-        if Obs[ys[i], xs[i]] > 0:
-            test = 0
-            break
-        Dhor = np.sqrt((xs[i] - xc) * (xs[i] - xc) + (ys[i] - yc) * (ys[i] - yc)) * Csize
-        if i > 0:
-            sumobs2 += Obs2[ys[i], xs[i]]
-        z = dtm[ys[i], xs[i]]
-        zline = slope_perc / 100. * Dhor + zo
-        diffz = max(diffz, abs(zline - z))
-        if diffz > max_diff_z:
-            test = 0
-            break
-    if test:
-        newLsl += min(sumobs2 * Csize, Dhor)
-        if newLsl > Lmax_ab_sl:
-            test = 0
-    
-    return test, newLsl
-
-
-def diffz_prop_L(max_diff_z, D_neighborhood, L):
-    return max_diff_z * L / D_neighborhood
-
-
-def build_Tab_neibs(newObs, dtm, azimuts, dists_index, coords, min_slope, max_slope, nbpix):
-    nrows, ncols = dtm.shape
-    nbneig = azimuts.shape[0]
-    
-    IdPix = np.ones_like(dtm, dtype=np.int32) * -1
-    IdVois = np.zeros((nbpix, nbneig), dtype=np.uint16)
-    Slope = np.ones((nbpix, nbneig), dtype=np.int16) * -9999
-    Id = np.ones((nbpix, nbneig), dtype=np.int32) * -9999
-    Tab_corresp = np.zeros((nbpix, 3), dtype=np.uint16)
-    
-    ind = 0
-    for y in range(nrows):
-        for x in range(ncols):
-            if newObs[y, x] == 0:
-                IdPix[y, x] = ind
-                Tab_corresp[ind, 0] = y
-                Tab_corresp[ind, 1] = x
-                ind += 1
-                
-    for ind in range(nbpix):  
-        y = Tab_corresp[ind, 0]
-        x = Tab_corresp[ind, 1]
-        nbok = 0
-        z = dtm[y, x]
-        for i in range(nbneig):
-            y1 = y + coords[i, 0]
-            x1 = x + coords[i, 1]
-            
-            if y1 < 0 or y1 >= nrows or x1 < 0 or x1 >= ncols:
-                continue                    
-            if newObs[y1, x1]:
-                continue
-            if y1 == y and x1 == x:
-                continue
-            z1 = dtm[y1, x1]
-            deltaH = z1 - z 
-            D = dists_index[i]
-            sl = deltaH / D * 100
-            abssl = abs(sl)                  
-            if abssl >= min_slope and abssl <= max_slope:
-                IdVois[ind, nbok] = i
-                Id[ind, nbok] = IdPix[y1, x1]
-                sign = 1
-                if sl < 0:
-                    sign = -1
-                Slope[ind, nbok] = int(abssl * 100 + 0.5) * sign
-                nbok += 1
-        Tab_corresp[ind, 2] = nbok
-            
-    return IdVois, Id, Tab_corresp, IdPix, Slope
-
-
-def calc_init(idcurrent, Id, IdVois, Slope, Best, Tab_corresp, Az, Dist, newObs, Obs2, Dist_to_End, dtm, Csize, max_diff_z, D_neighborhood, Lmax_ab_sl, take_dtoend, yE, xE, mindist_to_end):
-    xc = Tab_corresp[idcurrent, 1]
-    yc = Tab_corresp[idcurrent, 0]
-    nbvois = Tab_corresp[idcurrent, 2]
-    add_to_frontier = np.zeros(nbvois, dtype=np.int32)
-    nbok = 0
-    
-    for neib in range(nbvois):
-        idvois = Id[idcurrent, neib]
-        D = Dist[IdVois[idcurrent, neib]]
-        y = Tab_corresp[idvois, 0]
-        x = Tab_corresp[idvois, 1]
+            Obs = np.zeros_like(dtm,dtype=np.int8)
         
-        if newObs[y, x]:
-            continue
+        pt_list=get_points_from_waypoints(Waypoints_file,Dtm_file)  
+        tron_list = np.unique(pt_list[:,0])
         
-        D = Dist[IdVois[idcurrent, neib]]
-        Azimut = Az[IdVois[idcurrent, neib]]
-        slope_perc = Slope[idcurrent, neib] / 100.
-
-        # Assuming check_profile function is defined elsewhere
-        test_prof, newLsl = check_profile(yc, xc, y, x, slope_perc, dtm, Csize,
-                                           diffz_prop_L(max_diff_z, D_neighborhood, D),
-                                           newObs, Obs2, 0, Lmax_ab_sl)
-        if not test_prof:
-            continue
-
-        if take_dtoend:
-            D_to_cp = Dist_to_End[y, x]
+        if Property_file!="":
+            Fonc = shapefile_to_np_array(Property_file,Extent,Csize,"FONC_OK",
+                                     order_field=None,order=None)
         else:
-            D_to_cp = Distplan(y, x, yE, xE) * Csize
+            Fonc = np.ones_like(dtm,dtype=np.int8)
+        
+        #get usefull variables
+        printor(4)
 
-        add_to_frontier[nbok] = idvois
-        nbok += 1
-        Best[idvois, 0] = idvois
-        Best[idvois, 1] = D + newLsl
-        Best[idvois, 2] = D
-        Best[idvois, 3] = slope_perc
-        Best[idvois, 4] = Azimut
-        Best[idvois, 5] = idcurrent
-        Best[idvois, 6] = 10 * D_neighborhood
-        Best[idvois, 7] = newLsl
-        Best[idvois, 8] = 1
-        Best[idvois, 9] = D_to_cp
-
-        mindist_to_end = min(mindist_to_end, D_to_cp)
-    
-    return Best, add_to_frontier[:nbok], mindist_to_end
-
-
-def get_pix_bufgoal_and_update(Best, Tab_corresp, bufgoal, start, Csize, yE, xE):    
-    nbmax = (2 * int(bufgoal / Csize + 0.5) + 1) * (2 * int(bufgoal / Csize + 0.5) + 1)
-    nbval = Best.shape[0]
-    add_to_frontier = np.zeros((nbmax,), dtype=np.int32)  
-    keep = np.zeros((nbval,), dtype=np.uint8)
-    
-    j = 0
-    
-    for i in range(nbval):
-        if Best[i, 0] < 0:
-            continue
-        if Best[i, 9] <= bufgoal:
-            add_to_frontier[j] = i            
-            j += 1
-            current = i
-            # mark pixel from as 1
-            while current != start:
-                if keep[current] == 1:
-                    break
-                keep[current] = 1
-                current = int(Best[current, 5])
-        y = Tab_corresp[i, 0]
-        x = Tab_corresp[i, 1]
-        Best[i, 9] = Distplan(y, x, yE, xE) * Csize  
-    
-    return Best, add_to_frontier[0:j], keep
-
-
-def basic_calc(idcurrent, Id, IdVois, Slope, Best, Tab_corresp, Az, Dist, newObs, Obs2,
-               Dist_to_End, dtm, LocSlope, Csize, max_diff_z, D_neighborhood, Lmax_ab_sl,
-               take_dtoend, yE, xE, mindist_to_end, prop_sl_max, angle_hairpin, Radius,
-               penalty_xy, penalty_z, max_slope_change, max_hairpin_angle,modhair=1.5):
-
-    xc = Tab_corresp[idcurrent, 1]
-    yc = Tab_corresp[idcurrent, 0]
-    nbptbef = int(Best[idcurrent, 8])
-    nbvois = Tab_corresp[idcurrent, 2]
-    add_to_frontier = np.zeros((nbvois,), dtype=np.int32)
-    nbok = 0
-
-    for neib in range(nbvois):
-        idvois = Id[idcurrent, neib]
-        D = Dist[IdVois[idcurrent, neib]]
-        if Best[idvois, 1] < Best[idcurrent, 1] + D:
-            continue
-        y = Tab_corresp[idvois, 0]
-        x = Tab_corresp[idvois, 1]
-        if newObs[y, x]:
-            continue
-        if idvois == Best[idcurrent, 5]:
-            continue
-        difangle2, hairpin = 0, 0
-        Azimut = Az[IdVois[idcurrent, neib]]
-        slope_perc = Slope[idcurrent, neib] / 100.
-        difangle = diff_az(Azimut, Best[idcurrent, 4])
-        if difangle > max_hairpin_angle:
-            continue
-        if difangle > angle_hairpin:
-            if LocSlope > prop_sl_max:
-                continue
-            hairpin = 1
-        if nbptbef > 1 and not hairpin:
-            idfrom = int(Best[idcurrent, 5])
-            Dcurrent = Best[idcurrent, 2] - Best[idfrom, 2]
-            difangle2 = diff_az(Azimut, Best[idfrom, 4])
-            if Dcurrent <= 2 * Radius and difangle2 > angle_hairpin:
-                if LocSlope > prop_sl_max:
-                    continue
-                ycen = 0.5 * (yc + Tab_corresp[idfrom, 0])
-                xcen = 0.5 * (xc + Tab_corresp[idfrom, 1])
-                idfrom2 = int(Best[idfrom, 5])
-                a2y = Tab_corresp[idfrom2, 0]
-                a2x = Tab_corresp[idfrom2, 1]
-                az1 = calculate_azimut(a2x, a2y, xcen, ycen)
-                az2 = calculate_azimut(xcen, ycen, x, y)
-                difangle2 = diff_az(az1, az2)
-                if difangle2 > max_hairpin_angle:
-                    continue
-                hairpin = 1
-        if hairpin and Best[idcurrent, 6] <= 2 * modhair * Radius:
-            continue
-        if nbptbef > 1:
-            inter = 0
-            i = 1
-            idfrom = int(Best[idcurrent, 5])
-            while i < nbptbef:
-                a1y = Tab_corresp[idfrom, 0]
-                a1x = Tab_corresp[idfrom, 1]
-                idfrom = int(Best[idfrom, 5])
-                a2y = Tab_corresp[idfrom, 0]
-                a2x = Tab_corresp[idfrom, 1]
-                if get_intersect(a1y, a1x, a2y, a2x, yc, xc, y, x):
-                    inter = 1
-                    break
-                i += 1
-            if inter:
-                continue
-        penalty_dir = penalty_xy * (max(difangle, difangle2) / angle_hairpin) ** 2
-        difslope = abs(Best[idcurrent, 3] - slope_perc)
-        penalty_slope = penalty_z * (difslope / max_slope_change) ** 2
-        test_prof, newLsl = check_profile(yc, xc, y, x, slope_perc, dtm, Csize,
-                                           diffz_prop_L(max_diff_z, D_neighborhood, D),
-                                           newObs, Obs2, Best[idcurrent, 7], Lmax_ab_sl)
-        if not test_prof:
-            continue
-        new_cost = (Best[idcurrent, 1] + D + penalty_dir + penalty_slope + newLsl - Best[idcurrent, 7])
-        if hairpin:
-            new_cost += 100 * (LocSlope / prop_sl_max) ** 2
-        if take_dtoend:
-            D_to_cp = Dist_to_End[y, x]
-        else:
-            D_to_cp = Distplan(y, x, yE, xE) * Csize
-        if Best[idvois, 1] > new_cost:
-            add_to_frontier[nbok] = idvois
-            nbok += 1
-            Best[idvois, 0] = idvois
-            Best[idvois, 1] = new_cost
-            Best[idvois, 2] = Best[idcurrent, 2] + D
-            Best[idvois, 3] = slope_perc
-            Best[idvois, 4] = Azimut
-            Best[idvois, 5] = idcurrent
-            Best[idvois, 7] = newLsl
-            Best[idvois, 8] = Best[idcurrent, 8] + 1
-            Best[idvois, 9] = D_to_cp
-            Best[idvois, 10] = hairpin
-            Best[idvois, 6] = 10 * D_neighborhood
-            if hairpin:
-                Best[idvois, 6] = min(Best[idvois, 6], D)
-            i = 1
-            idfrom = idcurrent
-            while i < nbptbef - 1 and Best[idvois, 6] >= 2 * modhair * Radius:
-                idfrom2 = int(Best[idfrom, 5])
-                if Best[idfrom, 10]:
-                    a1y = Tab_corresp[idfrom2, 0]
-                    a1x = Tab_corresp[idfrom2, 1]
-                    Best[idvois, 6] = min(Best[idvois, 6], Distplan(y, x, a1y, a1x) * Csize)
-                idfrom = idfrom2
-                i += 1
-            mindist_to_end = min(mindist_to_end, D_to_cp)
-    
-    return Best, add_to_frontier[0:nbok], mindist_to_end
-
-
-def calcul_distance_de_cout(yE, xE, zone_rast, Csize, Max_distance=100000):
-    coords = np.array([[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]], dtype=np.int8)
-    nbneig = coords.shape[0]
-    nline, ncol = zone_rast.shape
-    dists_index = np.zeros((nbneig,), dtype=np.float32)
-
-    Out_distance = np.ones_like(zone_rast, dtype=np.float32) * Max_distance
-    Inds = np.ones((nline * ncol, 2), dtype=np.int32) * -9999
-
-    for j in range(nbneig):
-        dists_index[j] = np.sqrt(coords[j, 0] * coords[j, 0] + coords[j, 1] * coords[j, 1]) * Csize
-
-    Out_distance[yE, xE] = 0
-    i = 0
-    for j in range(nbneig):
-        y = coords[j, 0] + yE
-        x = coords[j, 1] + xE
-        if y<0 or y>=nline or x<0 or x>=ncol:
-            if zone_rast[y, x] == 1:
-                Dist = dists_index[j]
-                if Out_distance[y, x] > Dist:
-                    Out_distance[y, x] = Dist
-                    Inds[i, 0], Inds[i, 1] = y, x
-                    i += 1
-
-    while i > 0:
-        Indsbis = np.copy(Inds[0:i])
-        nbinds = i
-        i = 0
-        for idpix in range(nbinds):
-            y1, x1 = Indsbis[idpix, 0], Indsbis[idpix, 1]
-            dist_ac = Out_distance[y1, x1]
-            for j in range(nbneig):
-                y = coords[j, 0] + y1
-                x = coords[j, 1] + x1
-                if y<0 or y>=nline or x<0 or x>=ncol:
-                    if zone_rast[y, x] == 1:
-                        dist_ac = Out_distance[y1, x1] + dists_index[j]
-                        if Out_distance[y, x] > dist_ac:
-                            Out_distance[y, x] = dist_ac
-                            Inds[i, 0], Inds[i, 1] = y, x
-                            i += 1
-
-    for y in range(nline):
-        for x in range(ncol):
-            if Out_distance[y, x] == Max_distance:
-                Out_distance[y, x] = -9999
+           
+        road_network_proj,proj = get_proj_from_road_network(Waypoints_file)  
+        Obs[dtm==-9999]=1
+        Obs[Fonc==0]=2
+        del Fonc
+        
+        
+        #Compute Slope raster and Local Slope raster
+        Perc_Slope = get_Slope(Dtm_file)
+        Perc_Slope[dtm==-9999]=-9999
+        Local_Slope =  calc_local_slope(Perc_Slope,1.25*Radius,Csize,trans_slope_hairpin)                            
           
-    return Out_distance
+        #Build neigborhood table
+        IdVois, Id, Tab_corresp,IdPix,Slope,Dist,Az = build_NeibTable(D_neighborhood,Csize,dtm,np.int8(Obs>0),min_slope,max_slope)
+        
+        res_process = QCoreApplication.translate("MainWindow",'\n\nRésultat par tronçon')
+        
+        Generaltest=0
+        road_finder_exec_force_wp3(trans_slope_all,min_slope,max_slope,
+                                    penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
+                                    Lmax_ab_sl,Radius,test,Csize,Rspace,tron_list,
+                                    road_network_proj,proj,Extent,dtm,Obs,IdVois, Id, Tab_corresp,
+                                    IdPix,Az,Dist,Local_Slope,res_process,Generaltest,pt_list,Slope,Perc_Slope,
+                                    nrows,ncols)
+        return res_process
+
+
+def road_finder_exec_force_wp3(trans_slope_all,min_slope,max_slope,
+                                  penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
+                                  Lmax_ab_sl,Radius,test,Csize,Rspace,tron_list,
+                                  road_network_proj,proj,Extent,dtm,Obs,IdVois, Id, Tab_corresp,
+                                  IdPix,Az,Dist,Local_Slope,res_process,Generaltest,pt_list,Slope,Perc_Slope,
+                                  nrows,ncols):
+    
+    for id_tron in tron_list:  
+        printor(9,id_tron)
+        segments = get_waypoints(id_tron,pt_list)           
+        #Check if points are within MNT/property and are not ostacles
+        test, res_process,end = test_point_within(segments,dtm,Obs,id_tron,res_process)
+        if not test : continue
+            
+        #Check if points are within possible prospection
+        Dist_to_End =  calcul_distance_de_cout(end[0],end[1],np.int8(Obs==0),Csize,Max_distance=100000)    
+        test=1
+        for i in range(0,len(segments)):
+            start = segments[i][0]
+            if Dist_to_End[start]<0:                    
+                if i==0:
+                    txt = QCoreApplication.translate("MainWindow",'   Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Des obstacles empêchent de joindre le début et la fin du tronçon')
+                else:
+                    txt = QCoreApplication.translate("MainWindow",'   Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow"," : Des obstacles empêchent d'atteindre le point de passage ID_POINT ")+str(i+1)
+                printor(2,txt)
+                res_process+= txt+'\n'
+                test=0
+        
+        if not test:continue
+        
+        #Process
+        newObs = np.copy(np.int8(Obs>0))
+        newObs[Dist_to_End<0]=1
+        txt = ""
+        
+        Path,test = Astar_buf_wp(segments,Slope,IdVois, Id, Tab_corresp,IdPix,Az,Dist,
+                                min_slope,max_slope,penalty_xy,penalty_z,Dist_to_End,
+                                Local_Slope,Perc_Slope,Csize,dtm,max_diff_z,
+                                trans_slope_all,newObs,angle_hairpin,Lmax_ab_sl,Radius,
+                                D_neighborhood)
+        
+        Lsl=np.sum(Path[:,6]) 
+        nb_lac = len(get_id_lacets(Path,angle_hairpin))  
+        if test==1:                             
+            Path_to_lineshape(Path,Rspace+'Troncon_'+str(int(id_tron))+'_complet.shp',proj,Extent,Csize,dtm,nb_lac)   
+            if nb_lac>0:
+                NewPath = trace_lace(Path, Radius,Extent,Csize,angle_hairpin,dtm,coefplat=2)
+                NewPath_to_lineshape(NewPath,Rspace+'Troncon_'+str(int(id_tron))+'_lacets_corriges.shp',proj)                     
+                if  Generaltest==0:
+                    ArrayToGtiff(Local_Slope,Rspace+"PenteLocale_Lacet",Extent,nrows,ncols,road_network_proj,255,raster_type='UINT8') 
+                    Generaltest=1
+                #Path_to_lace(Path,Rspace+'Lacets_Troncon_'+str(int(id_tron))+'.shp',proj,Extent,Csize,dtm)
+            txt = QCoreApplication.translate("MainWindow",'\n    Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Un chemin optimal a été trouvé. ')
+            txt +=QCoreApplication.translate("MainWindow",'\n                  Longueur planimétrique : ')+str(int((Path[-1,4])+0.5))+" m"
+            if nb_lac>0:
+                txt +=QCoreApplication.translate("MainWindow",'\n                  Longueur planimétrique (avec lacets corrigés) : ')
+                txt +=str(int(np.sum(NewPath[:,4])+0.5))+" m"
+            txt +=QCoreApplication.translate("MainWindow",'\n                  Nombre de lacets : ')+str(int(nb_lac))
+            if Lsl>0:
+                txt += "\n                  "+ QCoreApplication.translate("MainWindow","Sur ")+str(int(Lsl+0.5))+QCoreApplication.translate("MainWindow"," m, la pente en travers est supérieure à la pente en travers max.")
+            printor(2,txt) 
+            
+        else: 
+            Path_to_lineshape(Path,Rspace+'Troncon_'+str(int(id_tron))+'_incomplet.shp',proj,Extent,Csize,dtm,nb_lac)
+            txt += QCoreApplication.translate("MainWindow",'\n    Tronçon n°')+str(int(id_tron))+QCoreApplication.translate("MainWindow",' : Aucun chemin trouvé. ')
+            txt += QCoreApplication.translate("MainWindow",'\n                  Le chemin le plus proche du but a été sauvegardé. ')               
+            printor(2,txt) 
+        res_process+= txt+"\n"
+
+
+def get_param(trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,
+              penalty_z,D_neighborhood,max_diff_z,angle_hairpin,Dtm_file,Obs_Dir,
+              Waypoints_file,Property_file,Csize,Lmax_ab_sl,Radius):
+    
+    
+    """Generate a text summary of the parameters used for modeling.
+
+    This function constructs a text summary containing the filenames of the files
+    used for modeling (MNT, Points de passage, Foncier, and Dossier Obstacles) and
+    the parameters used for the modeling process.
+
+    :param trans_slope_all: Maximum slope in traverse direction at any point.
+    :type trans_slope_all: float
+
+    :param trans_slope_hairpin: Maximum slope in traverse direction for placing a hairpin turn.
+    :type trans_slope_hairpin: float
+
+    :param min_slope: Minimum slope in longitudinal direction.
+    :type min_slope: float
+
+    :param max_slope: Maximum slope in longitudinal direction.
+    :type max_slope: float
+
+    :param penalty_xy: Penalty for changing direction.
+    :type penalty_xy: float
+
+    :param penalty_z: Penalty for changing the slope direction.
+    :type penalty_z: float
+
+    :param D_neighborhood: Radius of search around a pixel.
+    :type D_neighborhood: float
+
+    :param max_diff_z: Maximum difference between terrain altitude and theoretical altitude of the trace.
+    :type max_diff_z: float
+
+    :param angle_hairpin: Angle beyond which a turn is considered a hairpin.
+    :type angle_hairpin: float
+
+    :param Dtm_file: Path to the Digital Terrain Model (MNT) file.
+    :type Dtm_file: str
+
+    :param Obs_Dir: Directory containing obstacle files.
+    :type Obs_Dir: str
+
+    :param Waypoints_file: Path to the waypoints file.
+    :type Waypoints_file: str
+
+    :param Property_file: Path to the property file.
+    :type Property_file: str
+
+    :param Csize: Resolution of the MNT file (cell size).
+    :type Csize: float
+
+    :param Lmax_ab_sl: Maximum cumulative length with cross slope > maximum cross slope.
+    :type Lmax_ab_sl: float
+
+    :param Radius: Turning radius applied to hairpin turns.
+    :type Radius: float
+
+    :return: Text summary of the parameters used for modeling.
+    :rtype: str
+    """
+    txt = QCoreApplication.translate("MainWindow","FICHIERS UTILISES POUR LA MODELISATION:") + "\n\n"
+    txt += QCoreApplication.translate("MainWindow","   - MNT :                   ") + Dtm_file+"\n"
+    txt += QCoreApplication.translate("MainWindow","     Résolution (m) :        ")+str(Csize)+" m\n"
+    txt += QCoreApplication.translate("MainWindow","   - Points de passage :     ") + Waypoints_file+"\n"
+    txt += QCoreApplication.translate("MainWindow","   - Foncier :               ") + Property_file+"\n"
+    txt += QCoreApplication.translate("MainWindow","   - Dossier Obstacles :     ") + Obs_Dir+"\n\n\n"
+    txt += "" .join (["_"]*80) + "\n\n"
+    txt += QCoreApplication.translate("MainWindow", "PARAMETRES UTILISES POUR LA MODELISATION:")+ "\n\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pente en long min. :")+"                                                        "+str(min_slope)+" %\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pente en long max. :")+"                                                        "+str(max_slope)+" %\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pente en travers max. en tout point :")+"                                       "+str(trans_slope_all)+" %\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pente en travers max. pour implanter un virage en lacet :")+"                   "+str(trans_slope_hairpin)+"  %\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pénalité de changement de direction :")+"                                       "+str(penalty_xy)+" m/"+str(angle_hairpin)+"°\n"
+    txt += QCoreApplication.translate("MainWindow","   - Pénalité de changement du sens de pente en long :")+"                           "+str(penalty_z)+" m\n"
+    txt += QCoreApplication.translate("MainWindow","   - Rayon de recherche autour d'un pixel :")+"                                      "+str(D_neighborhood)+" m\n"
+    txt += QCoreApplication.translate("MainWindow","   - Différence max. entre altitude du terrain et altitude théorique du trace :")+"  "+str(max_diff_z)+" m\n"
+    txt += QCoreApplication.translate("MainWindow","   - Angle au-delà duquel un virage est considéré comme lacet :")+"                  "+str(angle_hairpin)+" °\n"
+    txt += QCoreApplication.translate("MainWindow","   - Rayon de braquage appliqué aux lacets :")+"                                     "+str(Radius)+" m\n"
+    txt += QCoreApplication.translate("MainWindow","   - Longueur cumulée max. avec Pente en travers > Pente en travers max. :")+"       "+str(Lmax_ab_sl)+" m\n"
+    
+    return txt
+
+
+def create_res_dir(Result_Dir,trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,penalty_z,D_neighborhood):
+    
+    
+    """Create a directory for storing simulation results based on specified parameters.
+
+    This function creates a directory within the specified Result_Dir to store simulation results.
+    The directory name is generated based on the provided parameters, including:
+
+    - trans_slope_all: Transition slope for all road sections.
+    - trans_slope_hairpin: Transition slope specifically for hairpin turns.
+    - min_slope: Minimum allowable slope for road segments.
+    - max_slope: Maximum allowable slope for road segments.
+    - penalty_xy: Penalty factor for changes in x-y direction.
+    - penalty_z: Penalty factor for changes in z (elevation) direction.
+    - D_neighborhood: Neighborhood distance for considering adjacent pixels in computations.
+
+    The directory name format is as follows:
+    Simu_<optnum>_Pl(<min_slope>-<max_slope>)_Pt(<trans_slope_all>-<trans_slope_hairpin>)_Pen(<penalty_xy>-<penalty_z>)_D(<D_neighborhood>)
+
+    :param Result_Dir: The path to the directory where simulation results will be stored.
+    :type Result_Dir: str
+
+    :param trans_slope_all: Transition slope for all road sections.
+    :type trans_slope_all: float
+
+    :param trans_slope_hairpin: Transition slope specifically for hairpin turns.
+    :type trans_slope_hairpin: float
+
+    :param min_slope: Minimum allowable slope for road segments.
+    :type min_slope: float
+
+    :param max_slope: Maximum allowable slope for road segments.
+    :type max_slope: float
+
+    :param penalty_xy: Penalty factor for changes in x-y direction.
+    :type penalty_xy: float
+
+    :param penalty_z: Penalty factor for changes in z (elevation) direction.
+    :type penalty_z: float
+
+    :param D_neighborhood: Neighborhood distance for considering adjacent pixels in computations.
+    :type D_neighborhood: float
+
+
+    :return: The path to the created directory for storing simulation results.
+    :rtype: str
+
+    :raises: None
+    """
+    dirs = [d for d in os.listdir(Result_Dir) if os.path.isdir(os.path.join(Result_Dir, d))]
+    list_dir = []
+    for dire in dirs:
+        if dire[:5]=='Simu_':
+            list_dir.append(dire)
+    optnum = len(list_dir)+1
+    Rspace=Result_Dir+'Simu_'+str(optnum)    
+    Rspace+="_Pl("+str(min_slope)+"-"+str(max_slope)+")"
+    Rspace+="_Pt("+str(trans_slope_all)+"-"+str(trans_slope_hairpin)+")"
+    Rspace+="_Pen("+str(penalty_xy)+"-"+str(penalty_z)+")"
+    Rspace+="_D("+str(D_neighborhood)+")"
+    try:os.mkdir(Rspace)
+    except:pass   
+    
+    return Rspace+'/'
+
+#Chech all spatial entries before processing
+def check_files(Dtm_file,Waypoints_file,Property_file):
+    
+    """Checks the validity of input spatial files.
+
+    :param Dtm_file: Path to the Digital Terrain Model (DTM) raster file.
+    :type Dtm_file: str
+
+    :param Waypoints_file: Path to the waypoints spatial file.
+    :type Waypoints_file: str
+    
+    :param Property_file: Path to the property spatial file.
+    :type Property_file: str
+
+    :return: Tuple containing:
+             - Status of file checks (1 if all checks pass, 0 otherwise),
+             - Message detailing any identified problems with the input files,
+             - Cell size of the DTM raster file.
+    :rtype: tuple
+
+    :raises: None
+    """
+    test = 1
+    Csize = None
+    mess=QCoreApplication.translate("MainWindow","\nLES PROBLEMES SUIVANTS ONT ETE IDENTIFIES CONCERNANT LES ENTREES SPATIALES: \n")
+    #Check DTM    
+    try:
+        _,values,_,_ = raster_get_info(Dtm_file)  
+        Csize = values[4]
+        if values[5]==None:           
+            mess+=QCoreApplication.translate("MainWindow"," -   Raster MNT : Aucune valeur de NoData definie. Attention, cela peut engendrer des résultats éronnés.\n" )
+    except:
+        test=0
+        mess+=QCoreApplication.translate("MainWindow"," -   Raster MNT :  Le chemin d'acces est manquant ou incorrect. Ce raster est obligatoire\n") 
+            
+    #Check Waypoints 
+    try:    
+        testfd = check_field(Waypoints_file,"ID_TRON")
+        if testfd==0:
+            test=0
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Le champs 'ID_TRON' est manquant\n"  )
+        elif testfd==2:
+            test=0
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Veuillez remplir le champs 'ID_TRON' pour toutes les entités\n")         
+        
+        testfd =  check_field(Waypoints_file,"ID_POINT")
+        if testfd==0:
+            test=0
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Le champs 'ID_POINT' est manquant\n"  )
+        elif testfd==2:
+            test=0
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Veuillez remplir le champs 'ID_POINT' pour toutes les entités\n" )       
+        
+        testfd = check_field(Waypoints_file,"BUFF_POINT")
+        if testfd==0:
+            test=0
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Le champs 'BUFF_POINT' est manquant\n" ) 
+        elif testfd==2:
+            test=0
+            mess+=QCoreApplication.translate("MainWindow"," -  Couche points de passage : Veuillez remplir le champs 'BUFF_POINT' pour toutes les entités\n"   )         
+    except:
+        test=0
+        mess+=QCoreApplication.translate("MainWindow"," -   Couche points de passage : Le chemin d'acces est manquant ou incorrect. Cette couche est obligatoire\n" )
+    
+    #Check foncier    
+    if Property_file!="":   
+        try:
+            testfd = check_field(Property_file,"FONC_OK")
+            if testfd==0:
+                test=0
+                mess+=QCoreApplication.translate("MainWindow"," -  Couche foncier : Le champs 'FONC_OK' est manquant\n"  )
+            elif testfd==2:
+                test=0
+                mess+=QCoreApplication.translate("MainWindow"," -  Couche foncier : Veuillez remplir le champs 'FONC_OK' pour toutes les entités\n"    ) 
+        except:
+            test=0
+            mess+=QCoreApplication.translate("MainWindow"," -   Couche foncier : Le chemin d'acces est incorrect. \n")
+    if not test:
+        mess+="\n"
+        mess+=QCoreApplication.translate("MainWindow","MERCI DE CORRIGER AVANT DE RELANCER L'OUTIL\n")
+    
+    return test,mess,Csize
 

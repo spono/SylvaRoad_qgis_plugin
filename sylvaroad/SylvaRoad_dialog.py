@@ -23,14 +23,12 @@
 """
 
 
-from qgis.PyQt import uic
-from qgis.PyQt import QtWidgets
+from qgis.PyQt import uic, QtWidgets
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import QCoreApplication
 import os,datetime
-from .GIS import road_finder_exec_force_wp1,printor
-
-
+from .console import printor
+from .functions import road_finder_exec_force_wp1
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'SylvaRoad_dialog_base.ui'))
@@ -68,7 +66,6 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
         self.button_box.accepted.connect(self.launch)
         self.button_box.rejected.connect(self.abort)
         
-
 
     def open_folder(self, button_number):
         # Définit les filtres génériques pour Shapefiles et fichiers raster
@@ -130,7 +127,6 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
         return Workspace,Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,Lmax_ab_sl,Radius
 
 
-
 ################################################################################
 ### Script execution
 ################################################################################
@@ -161,6 +157,7 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
         printor(5)
         printor(11)
         Sylvaroad_UI.abort()
+
 
     def abort(self):
         self.close()
