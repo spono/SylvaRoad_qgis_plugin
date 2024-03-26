@@ -285,7 +285,8 @@ def test_point_within(segments, dtm, obs, id_tron, res_process):
     """
     nrows, ncols = obs.shape
     txt = ""
-    txt_deb = QCoreApplication.translate("MainWindow", f"\n    Tronçon n°{int(id_tron)}: ")
+    txt_deb = QCoreApplication.translate("MainWindow", "\n    Tronçon n°") 
+    txt_deb += f"{int(id_tron)}: "
     
     try:
         end = segments[-1][1]  # Last point in the segments list
@@ -312,7 +313,8 @@ def test_point_within(segments, dtm, obs, id_tron, res_process):
         if len(txt) > 0:
             txt_deb = "\n                  "
         for i, (start, _) in enumerate(segments[1:], start=1):
-            txt_pt = QCoreApplication.translate("MainWindow", f"Le point de passage ID_POINT {i+1}")
+            txt_pt = QCoreApplication.translate("MainWindow", "Le point de passage ID_POINT") 
+            txt_pt += f"{i+1}"
             if not (0 <= start[0] < nrows and 0 <= start[1] < ncols):
                 txt2 = txt_deb + txt_pt + QCoreApplication.translate("MainWindow", " n'est pas dans l'emprise du MNT")
                 txt += txt2
@@ -351,7 +353,9 @@ def test_point_within(segments, dtm, obs, id_tron, res_process):
                 res_process += txt2
 
     except IndexError:
-        txt = QCoreApplication.translate("MainWindow", f"    Tronçon n°{int(id_tron)}: Il faut au minimum deux points pour réaliser l'analyse")
+        txt = QCoreApplication.translate("MainWindow", "    Tronçon n°")
+        txt += f"{int(id_tron)}"
+        txt += QCoreApplication.translate("MainWindow", ": Il faut au minimum deux points pour réaliser l'analyse")
         res_process += txt
         end = ""
 

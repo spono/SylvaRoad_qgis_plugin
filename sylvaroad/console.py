@@ -118,4 +118,8 @@ def printor (number, arg = "" , arg2 = "", arg3 = ""):
         console_warning(QCoreApplication.translate("MainWindow","SylvaRoaD Launching..."))
     elif number == 11:
         console_warning(QCoreApplication.translate("MainWindow","SylvaRoaD finished"))
+    elif number == 12:
+        console_info(str(arg)+str(arg2))
+    elif number == 13:
+        console_info(str(arg)+str(arg2)+str(arg3))
 

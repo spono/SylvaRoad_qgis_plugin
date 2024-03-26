@@ -29,7 +29,7 @@ from .functions_np import build_NeibTable,calcul_distance_de_cout,calc_local_slo
 import numpy as np
       
 
-def road_finder_exec_force_wp1(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,                              
+def road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,                              
                               trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
                               penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
                               Lmax_ab_sl,Wspace,Radius):
@@ -56,20 +56,7 @@ def road_finder_exec_force_wp1(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Res
                     min_slope,max_slope,penalty_xy,penalty_z,
                     D_neighborhood,max_diff_z,angle_hairpin,Lmax_ab_sl,
                     Rspace,Radius)
-    res_process = road_finder_exec_force_wp2(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
-                              trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
-                              penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
-                              Lmax_ab_sl,Radius,test,mess,Csize,Rspace)
     
-    return Rspace,param,res_process
-    
-
-def road_finder_exec_force_wp2(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
-                              trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
-                              penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
-                              Lmax_ab_sl,Radius,test,mess,Csize,Rspace):
-    
-
     if not test:
         printor(2,mess)
         
@@ -113,21 +100,6 @@ def road_finder_exec_force_wp2(Dtm_file,Obs_Dir,Waypoints_file,Property_file,
         res_process = QCoreApplication.translate("MainWindow",'\n\nRésultat par tronçon')
         
         Generaltest=0
-        road_finder_exec_force_wp3(trans_slope_all,min_slope,max_slope,
-                                    penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
-                                    Lmax_ab_sl,Radius,test,Csize,Rspace,tron_list,
-                                    road_network_proj,proj,Extent,dtm,Obs,IdVois, Id, Tab_corresp,
-                                    IdPix,Az,Dist,Local_Slope,res_process,Generaltest,pt_list,Slope,Perc_Slope,
-                                    nrows,ncols)
-        return res_process
-
-
-def road_finder_exec_force_wp3(trans_slope_all,min_slope,max_slope,
-                                  penalty_xy,penalty_z,D_neighborhood,max_diff_z,angle_hairpin,
-                                  Lmax_ab_sl,Radius,test,Csize,Rspace,tron_list,
-                                  road_network_proj,proj,Extent,dtm,Obs,IdVois, Id, Tab_corresp,
-                                  IdPix,Az,Dist,Local_Slope,res_process,Generaltest,pt_list,Slope,Perc_Slope,
-                                  nrows,ncols):
     
     for id_tron in tron_list:  
         printor(9,id_tron)
@@ -190,6 +162,10 @@ def road_finder_exec_force_wp3(trans_slope_all,min_slope,max_slope,
             txt += QCoreApplication.translate("MainWindow",'\n                  Le chemin le plus proche du but a été sauvegardé. ')               
             printor(2,txt) 
         res_process+= txt+"\n"
+        ##test
+
+        ##test
+        return Rspace,param,res_process
 
 
 def get_param(trans_slope_all,trans_slope_hairpin,min_slope,max_slope,penalty_xy,

@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtCore import QCoreApplication
 import os,datetime
 from .console import printor
-from .functions import road_finder_exec_force_wp1
+from .functions import road_finder_exec_force_wp
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'SylvaRoad_dialog_base.ui'))
@@ -147,13 +147,21 @@ class sylvaroadDialog(QtWidgets.QDialog, FORM_CLASS):
         if 'Wspace' not in locals() or 'Wspace' not in globals() :
             Wspace = Result_Dir
 
-
-        Rspace,param,res_process = road_finder_exec_force_wp1(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,
-                                                                trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
-                                                                penalty_xy,penalty_z,D_neighborhood,max_diff_z,
-                                                                angle_hairpin,Lmax_ab_sl,Wspace,Radius)
-        str_duree,str_fin,str_debut=heures(Hdebut)        
-        create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut)
+        try :
+            Rspace,param,res_process = road_finder_exec_force_wp(Dtm_file,Obs_Dir,Waypoints_file,Property_file,Result_Dir,
+                                                                    trans_slope_all,trans_slope_hairpin,min_slope,max_slope,
+                                                                    penalty_xy,penalty_z,D_neighborhood,max_diff_z,
+                                                                    angle_hairpin,Lmax_ab_sl,Wspace,Radius)
+        except Exception as e:
+            printor(12,"Rspace: ",Rspace)
+            printor(12,"param: ",param)
+            printor(12,"res_process: ",res_process)
+            printor(2, e)
+            Sylvaroad_UI.abort()
+        str_duree,str_fin,str_debut=heures(Hdebut) 
+        try:
+            create_param_file(Rspace,param,res_process,str_duree,str_fin,str_debut)
+        except:pass
         printor(5)
         printor(11)
         Sylvaroad_UI.abort()
