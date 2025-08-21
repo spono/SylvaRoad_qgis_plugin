@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/plugins/SylvaRoad" >
-        <file>icon.png</file>
-    </qresource>
-</RCC>
