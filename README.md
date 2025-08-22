@@ -69,7 +69,7 @@ Tags = ___Desserte___, ___forestière___, ___montagne___, ___route___, ___MNT___
 ## Tool to assist in the design of new forest access routes 
 
 Version : 0.2  
-Langage : Python 3.x  
+Language : Python 3.x
 
 Funding : **Office National des Forêts - Pôle RDI de Chambéry** (*laurent.malabeux@onf.fr*)  
 ![ONF](./img/onf_logo.gif?raw=true)
@@ -88,9 +88,11 @@ SylvaRoaD is part of this approach and aims to assist foresters in the design of
 
 The various routes thus identified can be incorporated into a GPS in order to validate their feasibility on the ground. 
 
+This plugin is a QGIS adaptation of the tool that can be found at: (<https://gitlab.com/SDupire/sylvaroad>)
+
 ![SylvaLab](./img/illustration.png?raw=true)
 
-Tags = ___Desserte___, ___forestière___, ___montagne___, ___route___, ___MNT___, ___tracé___, ___conception___, ___création___, ___Forest___, ___Road___, ___Design___, ___DTM___  
+Tags = ___Forest___, ___Road___, ___Design___, ___DTM___  
 
 ---  
 ### SylvaRoaD Input Data
